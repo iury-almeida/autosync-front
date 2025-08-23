@@ -114,10 +114,6 @@ const lowStockProducts = [
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  function handleAddProduct(event: MouseEvent<HTMLButtonElement, MouseEvent>): void {
-    throw new Error('Function not implemented.');
-  }
-
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -251,13 +247,7 @@ export default function Dashboard() {
             <ShoppingCart className="h-6 w-6 text-primary-600 mr-3 group-hover:scale-110 transition-transform" />
             <span className="font-medium text-gray-900">Nova Venda</span>
           </button>
-          <button 
-            onClick={handleAddProduct}
-            className="flex items-center justify-center px-6 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
-          >
-            <Package className="h-6 w-6 text-primary-600 mr-3 group-hover:scale-110 transition-transform" />
-            <span className="font-medium text-gray-900">Adicionar Produto</span>
-          </button>
+
           <button className="flex items-center justify-center px-6 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-200 group">
             <TrendingUp className="h-6 w-6 text-primary-600 mr-3 group-hover:scale-110 transition-transform" />
             <span className="font-medium text-gray-900">Ver Relatórios</span>
