@@ -51,7 +51,6 @@ type ProductFormData = z.infer<typeof productSchema>;
 
 export default function ProductRegistration() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('principal');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -144,8 +143,8 @@ export default function ProductRegistration() {
     navigate(-1); // Volta para a página anterior
   };
 
-  return (
-    <div className="space-y-6">
+    return (
+    <div className="min-h-screen bg-gray-100">
 
       {/* Mensagem de feedback */}
       {message && (
@@ -163,110 +162,53 @@ export default function ProductRegistration() {
         </div>
       )}
 
-      {/* Conteúdo Principal */}
-      <div>
-        <div className="bg-white rounded-lg shadow-lg">
-                     {/* Cabeçalho */}
-           <div className="bg-blue-600 text-white px-6 py-4 rounded-t-lg">
-             <div className="flex items-center justify-between">
-               <div className="flex items-center space-x-4">
-                 <button
-                   onClick={handleGoBack}
-                   className="flex items-center space-x-1 bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm transition-colors"
-                   title="Voltar para a página anterior"
-                 >
-                   <ArrowLeft className="h-4 w-4" />
-                   <span>Voltar</span>
-                 </button>
-                 <h1 className="text-2xl font-bold">PRODUTOS</h1>
-               </div>
-               <div className="flex items-center space-x-2">
-                 <button
-                   onClick={handleNew}
-                   className="flex items-center space-x-1 bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm"
-                 >
-                   <Plus className="h-4 w-4" />
-                   <span>Novo</span>
-                 </button>
-                 <button
-                   onClick={handleSubmit(onSubmit)}
-                   disabled={isLoading}
-                   className="flex items-center space-x-1 bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm disabled:opacity-50"
-                 >
-                   <Save className="h-4 w-4" />
-                   <span>Salvar</span>
-                 </button>
-                 <button
-                   onClick={handleCancel}
-                   className="flex items-center space-x-1 bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm"
-                 >
-                   <X className="h-4 w-4" />
-                   <span>Cancelar</span>
-                 </button>
-               </div>
-             </div>
+                    {/* Cabeçalho Fixo */}
+       <div className="bg-blue-600 text-white px-6 py-4 sticky top-16 z-40 shadow-md rounded-lg mx-4 mt-4">
+         <div className="flex items-center justify-between">
+           <div className="flex items-center space-x-4">
+             <button
+               onClick={handleGoBack}
+               className="flex items-center space-x-1 bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm transition-colors"
+               title="Voltar para a página anterior"
+             >
+               <ArrowLeft className="h-4 w-4" />
+               <span>Voltar</span>
+             </button>
+                           <h1 className="text-2xl font-bold">CADASTRAR PRODUTO</h1>
            </div>
+           <div className="flex items-center space-x-2">
+             <button
+               onClick={handleNew}
+               className="flex items-center space-x-1 bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm"
+             >
+               <Plus className="h-4 w-4" />
+               <span>Novo</span>
+             </button>
+             <button
+               onClick={handleSubmit(onSubmit)}
+               disabled={isLoading}
+               className="flex items-center space-x-1 bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm disabled:opacity-50"
+             >
+               <Save className="h-4 w-4" />
+               <span>Salvar</span>
+             </button>
+             <button
+               onClick={handleCancel}
+               className="flex items-center space-x-1 bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm"
+             >
+               <X className="h-4 w-4" />
+               <span>Cancelar</span>
+             </button>
+           </div>
+         </div>
+       </div>
 
-          {/* Abas */}
-          <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
-              <button
-                onClick={() => setActiveTab('principal')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'principal'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Cadastro Principal
-              </button>
-              <button
-                onClick={() => setActiveTab('loja')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'loja'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Produto Loja
-              </button>
-              <button
-                onClick={() => setActiveTab('impostos')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'impostos'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Impostos
-              </button>
-              <button
-                onClick={() => setActiveTab('preco')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'preco'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Preço
-              </button>
-              <button
-                onClick={() => setActiveTab('encontrados')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'encontrados'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Item(ns) Encontrado(s)
-              </button>
-            </nav>
-          </div>
-
-          {/* Conteúdo das Abas */}
-          <div className="p-6">
-            {activeTab === 'principal' && (
-              <div className="space-y-6">
+             {/* Conteúdo Principal */}
+       <div className="p-6">
+         <div className="bg-white rounded-lg shadow-lg">
+           {/* Conteúdo do Formulário */}
+           <div className="p-6">
+            <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {/* Código */}
                   <div>
@@ -580,39 +522,6 @@ export default function ProductRegistration() {
                    </div>
                  </div>
                </div>
-             )}
-
-            {activeTab === 'loja' && (
-              <div className="text-center py-8">
-                <Package className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Produto Loja</h3>
-                <p className="mt-1 text-sm text-gray-500">Funcionalidade em desenvolvimento</p>
-              </div>
-            )}
-
-            {activeTab === 'impostos' && (
-              <div className="text-center py-8">
-                <Package className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Impostos</h3>
-                <p className="mt-1 text-sm text-gray-500">Funcionalidade em desenvolvimento</p>
-              </div>
-            )}
-
-            {activeTab === 'preco' && (
-              <div className="text-center py-8">
-                <Package className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Preço</h3>
-                <p className="mt-1 text-sm text-gray-500">Funcionalidade em desenvolvimento</p>
-              </div>
-            )}
-
-            {activeTab === 'encontrados' && (
-              <div className="text-center py-8">
-                <Package className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Item(ns) Encontrado(s)</h3>
-                <p className="mt-1 text-sm text-gray-500">Funcionalidade em desenvolvimento</p>
-              </div>
-            )}
           </div>
         </div>
       </div>

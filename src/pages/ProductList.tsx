@@ -118,21 +118,27 @@ export default function ProductList() {
   );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Produtos</h1>
-          <p className="text-gray-600 mt-1">Gerencie seu catálogo de produtos</p>
+    <div className="min-h-screen bg-gray-100">
+      {/* Cabeçalho Fixo */}
+      <div className="bg-blue-600 text-white px-6 py-4 sticky top-16 z-40 shadow-md rounded-lg mx-4 mt-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <h1 className="text-2xl font-bold">PRODUTOS</h1>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleAddProduct}
+              className="flex items-center space-x-1 bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm transition-colors"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Adicionar Produto</span>
+            </button>
+          </div>
         </div>
-        <button
-          onClick={handleAddProduct}
-          className="btn-primary flex items-center"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Adicionar Produto
-        </button>
       </div>
+
+      {/* Conteúdo Principal */}
+      <div className="p-6 space-y-6">
 
       {/* Filtros e Busca */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -298,6 +304,7 @@ export default function ProductList() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }
