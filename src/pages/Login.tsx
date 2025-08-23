@@ -1,14 +1,18 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Eye, EyeOff, LogIn, Package, TrendingUp, Users } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Package, TrendingUp, Users, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
+import { useCpfFormat } from '../hooks/useCpfFormat';
 
 // Schema de validação
 const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
+  cpf: z.string()
+    .min(11, 'CPF deve ter pelo menos 11 dígitos')
+    .max(14, 'CPF inválido')
+    .transform((val) => val.replace(/\D/g, '')), // Remove caracteres não numéricos
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
 });
 
@@ -17,7 +21,9 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { login, isLoading, error, clearError } = useAuthStore();
+  const location = useLocation();
+  const { login, isLoading, error, clearError, loginAttempts, resetLoginAttempts } = useAuthStore();
+  const { cpf, handleCpfChange } = useCpfFormat();
 
   const {
     register,
@@ -31,11 +37,18 @@ export default function Login() {
     clearError();
     try {
       await login(data);
-      navigate('/dashboard');
+      // Redirecionar para a página original ou dashboard
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
     } catch (error) {
       // Erro já tratado no store
     }
   };
+
+  // Reset das tentativas quando o componente montar
+  useEffect(() => {
+    resetLoginAttempts();
+  }, [resetLoginAttempts]);
 
   return (
     <div className="min-h-screen flex">
@@ -57,20 +70,22 @@ export default function Login() {
           <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
+                <label htmlFor="cpf" className="block text-sm font-medium text-gray-700 mb-1">
+                  CPF
                 </label>
                 <input
-                  {...register('email')}
-                  type="email"
-                  id="email"
+                  {...register('cpf')}
+                  type="text"
+                  id="cpf"
+                  value={cpf}
+                  onChange={(e) => handleCpfChange(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 shadow-sm"
-                  placeholder="seu@email.com"
+                  placeholder="000.000.000-00"
                 />
-                {errors.email && (
+                {errors.cpf && (
                   <p className="mt-2 text-sm text-red-600 flex items-center">
                     <span className="w-1 h-1 bg-red-600 rounded-full mr-2"></span>
-                    {errors.email.message}
+                    {errors.cpf.message}
                   </p>
                 )}
               </div>
@@ -110,16 +125,34 @@ export default function Login() {
 
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-                <p className="text-sm text-red-600 flex items-center">
-                  <span className="w-1 h-1 bg-red-600 rounded-full mr-2"></span>
-                  {error}
-                </p>
+                <div className="flex items-center">
+                  <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
+                  <p className="text-sm text-red-600">
+                    {error}
+                  </p>
+                </div>
+                {loginAttempts > 0 && (
+                  <p className="text-xs text-red-500 mt-2">
+                    Tentativa {loginAttempts} de 3
+                  </p>
+                )}
+              </div>
+            )}
+
+            {loginAttempts >= 3 && (
+              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                <div className="flex items-center">
+                  <AlertTriangle className="h-5 w-5 text-orange-600 mr-2" />
+                  <p className="text-sm text-orange-600">
+                    Múltiplas tentativas de login. Sua conta pode ter sido bloqueada temporariamente.
+                  </p>
+                </div>
               </div>
             )}
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || loginAttempts >= 3}
               className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               {isLoading ? (
@@ -136,7 +169,7 @@ export default function Login() {
           <div className="text-center">
             <p className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
               <strong>Credenciais de Teste:</strong><br />
-              admin@autosync.com / 123456
+              123.456.789-00 / 123456
             </p>
           </div>
         </div>

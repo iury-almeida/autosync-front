@@ -1,0 +1,621 @@
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useNavigate } from 'react-router-dom';
+import { 
+  Save, 
+  X, 
+  Trash2, 
+  Search, 
+  Copy, 
+  FileText, 
+  Printer, 
+  LogOut,
+  Eye,
+  Plus,
+  Package,
+  CheckCircle,
+  AlertCircle,
+  ArrowLeft
+} from 'lucide-react';
+import type { CreateProductData } from '../types';
+import { productService } from '../services/productService';
+
+// Schema de validação para produtos
+const productSchema = z.object({
+  codigo: z.string().min(1, 'Código é obrigatório'),
+  codigoBarra: z.string().optional(),
+  codFabrica: z.string().optional(),
+  aplicacao: z.string().optional(),
+  produto: z.string().min(1, 'Produto é obrigatório'),
+  descricaoPDV: z.string().optional(),
+  fornecedor: z.string().optional(),
+  usaGrade: z.enum(['SIM', 'NÃO']),
+  modelo: z.string().optional(),
+  marca: z.string().optional(),
+  cor: z.string().optional(),
+  grupo: z.string().optional(),
+  subGrupo: z.string().optional(),
+  unidEntrada: z.string().optional(),
+  unidSaida: z.string().optional(),
+  observacao: z.string().optional(),
+  manual: z.string().optional(),
+  ativo: z.enum(['SIM', 'NÃO']),
+  contEstoque: z.enum(['SIM', 'NÃO']),
+  garantia: z.string().optional(),
+  materiaPrima: z.string().optional(),
+});
+
+type ProductFormData = z.infer<typeof productSchema>;
+
+export default function ProductRegistration() {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('principal');
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    watch,
+  } = useForm<ProductFormData>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      usaGrade: 'NÃO',
+      ativo: 'SIM',
+      contEstoque: 'SIM',
+      codigoBarra: 'SEM GTIN',
+      manual: 'SEM MANUAL',
+    },
+  });
+
+  const showMessage = (type: 'success' | 'error', text: string) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage(null), 5000);
+  };
+
+  const onSubmit = async (data: ProductFormData) => {
+    setIsLoading(true);
+    setMessage(null);
+    
+    try {
+      const response = await productService.createProduct(data as CreateProductData);
+      
+      if (response.success) {
+        showMessage('success', 'Produto salvo com sucesso!');
+        reset();
+      } else {
+        showMessage('error', response.message || 'Erro ao salvar produto');
+      }
+    } catch (error: any) {
+      console.error('Erro ao salvar produto:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Erro ao salvar produto';
+      showMessage('error', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNew = () => {
+    reset();
+    setMessage(null);
+  };
+
+  const handleCancel = () => {
+    reset();
+    setMessage(null);
+  };
+
+  const handleDelete = async () => {
+    if (confirm('Tem certeza que deseja excluir este produto?')) {
+      // TODO: Implementar exclusão quando tiver um produto carregado
+      showMessage('error', 'Funcionalidade de exclusão será implementada');
+    }
+  };
+
+  const handleSearch = () => {
+    // TODO: Implementar busca
+    showMessage('error', 'Funcionalidade de busca será implementada');
+  };
+
+  const handleCopy = () => {
+    // TODO: Implementar cópia
+    showMessage('error', 'Funcionalidade de cópia será implementada');
+  };
+
+  const handlePrint = () => {
+    // TODO: Implementar impressão
+    showMessage('error', 'Funcionalidade de impressão será implementada');
+  };
+
+  const handleViewManual = () => {
+    const manual = watch('manual');
+    if (manual && manual !== 'SEM MANUAL') {
+      window.open(manual, '_blank');
+    } else {
+      showMessage('error', 'Nenhum manual disponível');
+    }
+  };
+
+  const handleGoBack = () => {
+    navigate(-1); // Volta para a página anterior
+  };
+
+  return (
+    <div className="space-y-6">
+
+      {/* Mensagem de feedback */}
+      {message && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg flex items-center space-x-2 ${
+          message.type === 'success' 
+            ? 'bg-green-100 border border-green-400 text-green-700' 
+            : 'bg-red-100 border border-red-400 text-red-700'
+        }`}>
+          {message.type === 'success' ? (
+            <CheckCircle className="h-5 w-5" />
+          ) : (
+            <AlertCircle className="h-5 w-5" />
+          )}
+          <span className="font-medium">{message.text}</span>
+        </div>
+      )}
+
+      {/* Conteúdo Principal */}
+      <div>
+        <div className="bg-white rounded-lg shadow-lg">
+                     {/* Cabeçalho */}
+           <div className="bg-blue-600 text-white px-6 py-4 rounded-t-lg">
+             <div className="flex items-center justify-between">
+               <div className="flex items-center space-x-4">
+                 <button
+                   onClick={handleGoBack}
+                   className="flex items-center space-x-1 bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm transition-colors"
+                   title="Voltar para a página anterior"
+                 >
+                   <ArrowLeft className="h-4 w-4" />
+                   <span>Voltar</span>
+                 </button>
+                 <h1 className="text-2xl font-bold">PRODUTOS</h1>
+               </div>
+               <div className="flex items-center space-x-2">
+                 <button
+                   onClick={handleNew}
+                   className="flex items-center space-x-1 bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm"
+                 >
+                   <Plus className="h-4 w-4" />
+                   <span>Novo</span>
+                 </button>
+                 <button
+                   onClick={handleSubmit(onSubmit)}
+                   disabled={isLoading}
+                   className="flex items-center space-x-1 bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm disabled:opacity-50"
+                 >
+                   <Save className="h-4 w-4" />
+                   <span>Salvar</span>
+                 </button>
+                 <button
+                   onClick={handleCancel}
+                   className="flex items-center space-x-1 bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm"
+                 >
+                   <X className="h-4 w-4" />
+                   <span>Cancelar</span>
+                 </button>
+               </div>
+             </div>
+           </div>
+
+          {/* Abas */}
+          <div className="border-b border-gray-200">
+            <nav className="flex space-x-8 px-6">
+              <button
+                onClick={() => setActiveTab('principal')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'principal'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Cadastro Principal
+              </button>
+              <button
+                onClick={() => setActiveTab('loja')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'loja'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Produto Loja
+              </button>
+              <button
+                onClick={() => setActiveTab('impostos')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'impostos'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Impostos
+              </button>
+              <button
+                onClick={() => setActiveTab('preco')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'preco'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Preço
+              </button>
+              <button
+                onClick={() => setActiveTab('encontrados')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'encontrados'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Item(ns) Encontrado(s)
+              </button>
+            </nav>
+          </div>
+
+          {/* Conteúdo das Abas */}
+          <div className="p-6">
+            {activeTab === 'principal' && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {/* Código */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Código <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      {...register('codigo')}
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="461"
+                    />
+                    {errors.codigo && (
+                      <p className="mt-1 text-sm text-red-600">{errors.codigo.message}</p>
+                    )}
+                  </div>
+
+                  {/* Código Barra */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Código Barra
+                    </label>
+                    <input
+                      {...register('codigoBarra')}
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="SEM GTIN"
+                    />
+                  </div>
+
+                  {/* Código Fábrica */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Cod. Fábrica
+                    </label>
+                    <input
+                      {...register('codFabrica')}
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="879624"
+                    />
+                  </div>
+
+                  {/* Aplicação */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Aplicação
+                    </label>
+                    <input
+                      {...register('aplicacao')}
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="CBR 650F 15 ADPTA"
+                    />
+                  </div>
+
+                  {/* Produto */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Produto <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      {...register('produto')}
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="CCP HORNET 600 08 ED C/RET KMC ACO 1045"
+                    />
+                    {errors.produto && (
+                      <p className="mt-1 text-sm text-red-600">{errors.produto.message}</p>
+                    )}
+                  </div>
+
+                  {/* Descrição PDV */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Descrição PDV
+                    </label>
+                    <input
+                      {...register('descricaoPDV')}
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="CCP HORNET 600 08 ED C/RET KMC ACO 1045"
+                    />
+                  </div>
+
+                  {/* Fornecedor */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Fornecedor
+                    </label>
+                    <div className="relative">
+                      <input
+                        {...register('fornecedor')}
+                        type="text"
+                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="454 COMERCIAL MOTOCICLO S/A"
+                      />
+                      <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+
+                  {/* Usa Grade */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Usa Grade
+                    </label>
+                    <select
+                      {...register('usaGrade')}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="NÃO">NÃO</option>
+                      <option value="SIM">SIM</option>
+                    </select>
+                  </div>
+
+                  {/* Modelo */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Modelo
+                    </label>
+                    <div className="relative">
+                      <input
+                        {...register('modelo')}
+                        type="text"
+                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="1 PADRÃO"
+                      />
+                      <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+
+                  {/* Marca */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Marca
+                    </label>
+                    <div className="relative">
+                      <input
+                        {...register('marca')}
+                        type="text"
+                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="1 PADRÃO"
+                      />
+                      <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+
+                  {/* Cor */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Cor
+                    </label>
+                    <input
+                      {...register('cor')}
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* Grupo */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Grupo
+                    </label>
+                    <div className="relative">
+                      <input
+                        {...register('grupo')}
+                        type="text"
+                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="1 GRUPO PADRÃO"
+                      />
+                      <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+
+                  {/* Sub Grupo */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Sub Grupo
+                    </label>
+                    <div className="relative">
+                      <input
+                        {...register('subGrupo')}
+                        type="text"
+                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="1 SUBGRUPO PADRÃO"
+                      />
+                      <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+
+                  {/* Unid. Entrada */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Unid. Entrada
+                    </label>
+                    <div className="relative">
+                      <input
+                        {...register('unidEntrada')}
+                        type="text"
+                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="1 UN"
+                      />
+                      <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+
+                  {/* Unid. Saída */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Unid. Saída
+                    </label>
+                    <div className="relative">
+                      <input
+                        {...register('unidSaida')}
+                        type="text"
+                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="1 UN"
+                      />
+                      <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
+                    </div>
+                  </div>
+
+                  {/* Observação */}
+                  <div className="md:col-span-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Observação
+                    </label>
+                    <textarea
+                      {...register('observacao')}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="ANEL PIST INAGO 0,50 RD 135 KIT TRANSMISSÃO HORNET 08 ED C/RET 1045-COD VAZ H00079X-H03978X-COD MOTOCICLO 774088/879624"
+                    />
+                  </div>
+
+                                     {/* Manual */}
+                   <div className="md:col-span-2">
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                       Manual
+                     </label>
+                     <div className="flex space-x-2">
+                       <input
+                         {...register('manual')}
+                         type="text"
+                         className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                         placeholder="SEM MANUAL"
+                       />
+                       <button
+                         type="button"
+                         onClick={handleViewManual}
+                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       >
+                         <Eye className="h-4 w-4" />
+                       </button>
+                     </div>
+                   </div>
+
+                   {/* Ativo */}
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                       Ativo
+                     </label>
+                     <select
+                       {...register('ativo')}
+                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     >
+                       <option value="SIM">SIM</option>
+                       <option value="NÃO">NÃO</option>
+                     </select>
+                   </div>
+
+                   {/* Cont. Estoque */}
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                       Cont. Estoque
+                     </label>
+                     <select
+                       {...register('contEstoque')}
+                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     >
+                       <option value="SIM">SIM</option>
+                       <option value="NÃO">NÃO</option>
+                     </select>
+                   </div>
+
+                   {/* Garantia */}
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                       Garantia
+                     </label>
+                     <input
+                       {...register('garantia')}
+                       type="text"
+                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       placeholder="Ex: 12 meses"
+                     />
+                   </div>
+
+                   {/* Matéria Prima */}
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                       Matéria Prima
+                     </label>
+                     <input
+                       {...register('materiaPrima')}
+                       type="text"
+                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       placeholder="Ex: Aço 1045"
+                     />
+                   </div>
+                 </div>
+               </div>
+             )}
+
+            {activeTab === 'loja' && (
+              <div className="text-center py-8">
+                <Package className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">Produto Loja</h3>
+                <p className="mt-1 text-sm text-gray-500">Funcionalidade em desenvolvimento</p>
+              </div>
+            )}
+
+            {activeTab === 'impostos' && (
+              <div className="text-center py-8">
+                <Package className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">Impostos</h3>
+                <p className="mt-1 text-sm text-gray-500">Funcionalidade em desenvolvimento</p>
+              </div>
+            )}
+
+            {activeTab === 'preco' && (
+              <div className="text-center py-8">
+                <Package className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">Preço</h3>
+                <p className="mt-1 text-sm text-gray-500">Funcionalidade em desenvolvimento</p>
+              </div>
+            )}
+
+            {activeTab === 'encontrados' && (
+              <div className="text-center py-8">
+                <Package className="mx-auto h-12 w-12 text-gray-400" />
+                <h3 className="mt-2 text-sm font-medium text-gray-900">Item(ns) Encontrado(s)</h3>
+                <p className="mt-1 text-sm text-gray-500">Funcionalidade em desenvolvimento</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

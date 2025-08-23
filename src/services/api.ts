@@ -3,7 +3,7 @@ import type { ApiResponse } from '../types';
 
 // Configuração base do axios
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5165',
   timeout: 10000,
 });
 
@@ -15,7 +15,8 @@ api.interceptors.request.use(
       try {
         const authData = JSON.parse(token);
         if (authData.state?.token) {
-          config.headers.Authorization = `Bearer ${authData.state.token}`;
+          // O token já vem com "Bearer " do backend, então não precisamos adicionar novamente
+          config.headers.Authorization = authData.state.token;
         }
       } catch (error) {
         console.error('Erro ao parsear token:', error);

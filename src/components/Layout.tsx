@@ -20,7 +20,7 @@ interface LayoutProps {
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Estoque', href: '/estoque', icon: Package },
+  { name: 'Produtos', href: '/produtos', icon: Package },
   { name: 'Vendas', href: '/vendas', icon: ShoppingCart },
   { name: 'Relatórios', href: '/relatorios', icon: BarChart3 },
 ];
@@ -85,7 +85,7 @@ export default function Layout({ children }: LayoutProps) {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                <p className="text-xs text-gray-500">{user?.email}</p>
+                <p className="text-xs text-gray-500">{user?.cpf}</p>
               </div>
               <button
                 onClick={handleLogout}
@@ -137,7 +137,7 @@ export default function Layout({ children }: LayoutProps) {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                <p className="text-xs text-gray-500">{user?.email}</p>
+                <p className="text-xs text-gray-500">{user?.cpf}</p>
               </div>
               <button
                 onClick={handleLogout}
@@ -187,7 +187,7 @@ export default function Layout({ children }: LayoutProps) {
                 </div>
                 <div className="hidden lg:block">
                   <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                  <p className="text-xs text-gray-500">{user?.email}</p>
+                  <p className="text-xs text-gray-500">{user?.cpf}</p>
                 </div>
               </div>
             </div>

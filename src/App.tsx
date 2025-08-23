@@ -4,6 +4,8 @@ import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import ProductList from './pages/ProductList';
+import ProductRegistration from './pages/ProductRegistration';
 
 // Criar uma instância do QueryClient
 const queryClient = new QueryClient({
@@ -37,22 +39,26 @@ function App() {
               </ProtectedRoute>
             }
           />
-          
-          {/* Rotas para módulos futuros */}
+
+          {/* Rota de listagem de produtos */}
           <Route
-            path="/estoque"
+            path="/produtos"
             element={
               <ProtectedRoute>
                 <Layout>
-                  <div className="space-y-6">
-                    <div>
-                      <h1 className="text-2xl font-bold text-gray-900">Estoque</h1>
-                      <p className="text-gray-600">Módulo em desenvolvimento</p>
-                    </div>
-                    <div className="card">
-                      <p className="text-gray-600">Funcionalidade de estoque será implementada em breve.</p>
-                    </div>
-                  </div>
+                  <ProductList />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rota de cadastro de produtos */}
+          <Route
+            path="/produtos/cadastro"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <ProductRegistration />
                 </Layout>
               </ProtectedRoute>
             }

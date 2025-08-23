@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User, LoginCredentials, AuthResponse } from '../types';
+import type { User, LoginCredentials } from '../types';
+import { AuthService } from '../services/authService';
+import type { LoginRequest } from '../services/authService';
 
 interface AuthState {
   user: User | null;
@@ -8,6 +10,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+  loginAttempts: number;
 }
 
 interface AuthActions {
@@ -18,6 +21,8 @@ interface AuthActions {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   clearError: () => void;
+  resetLoginAttempts: () => void;
+  validateToken: () => Promise<boolean>;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -31,41 +36,63 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      loginAttempts: 0,
 
       // Ações
       login: async (credentials: LoginCredentials) => {
         set({ isLoading: true, error: null });
         
         try {
-          // TODO: Implementar chamada real para API
-          // Por enquanto, simulando uma resposta
-          const mockResponse: AuthResponse = {
-            user: {
-              id: '1',
-              name: 'Usuário Teste',
-              email: credentials.email,
-              role: 'admin',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-            token: 'mock-jwt-token',
+          // Converter para o formato esperado pela API
+          const loginRequest: LoginRequest = {
+            CPFUsuario: credentials.cpf,
+            SenhaUsuario: credentials.password,
+            Tentativa: get().loginAttempts
           };
 
-          // Simular delay da API
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          const response = await AuthService.login(loginRequest);
+          
+          if (response.status) {
+            // Login bem-sucedido - salvar token
+            const token = response.token;
+            if (!token) {
+              throw new Error('Token não recebido do servidor');
+            }
 
+            set({
+              token: token,
+              isAuthenticated: true,
+              isLoading: false,
+              error: null,
+              loginAttempts: 0, // Reset das tentativas
+              // Criar um usuário básico baseado no token
+              user: {
+                id: '1', // Será atualizado quando tivermos endpoint de perfil
+                name: 'Usuário',
+                cpf: credentials.cpf,
+                role: 'user',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              }
+            });
+
+            console.log('Login realizado com sucesso. Token salvo:', token);
+          } else {
+            // Login falhou
+            const newAttempts = (response.qtdTentativa || get().loginAttempts) + 1;
+            set({
+              isLoading: false,
+              error: response.erro || 'Erro ao fazer login',
+              loginAttempts: newAttempts,
+            });
+            throw new Error(response.erro || 'Erro ao fazer login');
+          }
+        } catch (error: any) {
           set({
-            user: mockResponse.user,
-            token: mockResponse.token,
-            isAuthenticated: true,
             isLoading: false,
-            error: null,
+            error: error.message || 'Erro ao fazer login',
           });
-        } catch (error) {
-          set({
-            isLoading: false,
-            error: error instanceof Error ? error.message : 'Erro ao fazer login',
-          });
+          throw error;
         }
       },
 
@@ -75,7 +102,9 @@ export const useAuthStore = create<AuthStore>()(
           token: null,
           isAuthenticated: false,
           error: null,
+          loginAttempts: 0,
         });
+        console.log('Logout realizado. Token removido.');
       },
 
       setUser: (user: User) => {
@@ -96,6 +125,29 @@ export const useAuthStore = create<AuthStore>()(
 
       clearError: () => {
         set({ error: null });
+      },
+
+      resetLoginAttempts: () => {
+        set({ loginAttempts: 0 });
+      },
+
+      validateToken: async () => {
+        const { token, isAuthenticated } = get();
+        
+        if (!token || !isAuthenticated) {
+          return false;
+        }
+
+        try {
+          // Aqui você pode implementar uma chamada para validar o token
+          // Por exemplo, chamar um endpoint /api/validate-token
+          // Por enquanto, vamos apenas verificar se o token existe
+          return !!token;
+        } catch (error) {
+          console.error('Erro ao validar token:', error);
+          get().logout();
+          return false;
+        }
       },
     }),
     {

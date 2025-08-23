@@ -1,4 +1,6 @@
 import { Package, ShoppingCart, TrendingUp, AlertTriangle, Plus, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import AuthStatus from '../components/AuthStatus';
 
 const stats = [
   {
@@ -110,6 +112,12 @@ const lowStockProducts = [
 ];
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+
+  function handleAddProduct(event: MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    throw new Error('Function not implemented.');
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -122,10 +130,6 @@ export default function Dashboard() {
           <button className="btn-secondary flex items-center">
             <Plus className="h-4 w-4 mr-2" />
             Nova Venda
-          </button>
-          <button className="btn-primary flex items-center">
-            <Package className="h-4 w-4 mr-2" />
-            Adicionar Produto
           </button>
         </div>
       </div>
@@ -247,7 +251,10 @@ export default function Dashboard() {
             <ShoppingCart className="h-6 w-6 text-primary-600 mr-3 group-hover:scale-110 transition-transform" />
             <span className="font-medium text-gray-900">Nova Venda</span>
           </button>
-          <button className="flex items-center justify-center px-6 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-200 group">
+          <button 
+            onClick={handleAddProduct}
+            className="flex items-center justify-center px-6 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+          >
             <Package className="h-6 w-6 text-primary-600 mr-3 group-hover:scale-110 transition-transform" />
             <span className="font-medium text-gray-900">Adicionar Produto</span>
           </button>
@@ -260,6 +267,12 @@ export default function Dashboard() {
             <span className="font-medium text-gray-900">Estoque Baixo</span>
           </button>
         </div>
+      </div>
+
+      {/* Status da Autenticação */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-6">Status da Autenticação</h3>
+        <AuthStatus />
       </div>
     </div>
   );

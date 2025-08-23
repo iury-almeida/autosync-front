@@ -2,7 +2,7 @@
 export interface User {
   id: string;
   name: string;
-  email: string;
+  cpf: string;
   role: 'admin' | 'user';
   createdAt: string;
   updatedAt: string;
@@ -10,7 +10,7 @@ export interface User {
 
 // Tipos de autenticação
 export interface LoginCredentials {
-  email: string;
+  cpf: string;
   password: string;
 }
 
@@ -19,32 +19,64 @@ export interface AuthResponse {
   token: string;
 }
 
-// Tipos de produto/estoque
+// Tipos de produto baseados na imagem do sistema
 export interface Product {
   id: string;
-  name: string;
-  description?: string;
-  sku: string;
-  price: number;
-  cost: number;
-  stockQuantity: number;
-  minStockLevel: number;
-  category: string;
-  brand?: string;
+  codigo: string;
+  codigoBarra: string;
+  codFabrica: string;
+  aplicacao: string;
+  produto: string;
+  descricaoPDV: string;
+  fornecedor: string;
+  usaGrade: 'SIM' | 'NÃO';
+  modelo: string;
+  marca: string;
+  cor: string;
+  grupo: string;
+  subGrupo: string;
+  unidEntrada: string;
+  unidSaida: string;
+  observacao: string;
+  manual: string;
+  ativo: 'SIM' | 'NÃO';
+  contEstoque: 'SIM' | 'NÃO';
+  garantia: string;
+  materiaPrima: string;
+  dataCadastro: string;
+  horaCadastro: string;
+  dataAlteracao: string;
+  horaAlteracao: string;
+  usuario: string;
+  filial: string;
+  matriz: string;
+  versao: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface CreateProductData {
-  name: string;
-  description?: string;
-  sku: string;
-  price: number;
-  cost: number;
-  stockQuantity: number;
-  minStockLevel: number;
-  category: string;
-  brand?: string;
+  codigo: string;
+  codigoBarra: string;
+  codFabrica: string;
+  aplicacao: string;
+  produto: string;
+  descricaoPDV: string;
+  fornecedor: string;
+  usaGrade: 'SIM' | 'NÃO';
+  modelo: string;
+  marca: string;
+  cor: string;
+  grupo: string;
+  subGrupo: string;
+  unidEntrada: string;
+  unidSaida: string;
+  observacao: string;
+  manual: string;
+  ativo: 'SIM' | 'NÃO';
+  contEstoque: 'SIM' | 'NÃO';
+  garantia: string;
+  materiaPrima: string;
 }
 
 export interface UpdateProductData extends Partial<CreateProductData> {
