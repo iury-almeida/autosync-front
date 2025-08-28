@@ -22,7 +22,17 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading, error, clearError, loginAttempts, resetLoginAttempts } = useAuthStore();
+  const { 
+    login, 
+    isLoading, 
+    error, 
+    clearError, 
+    loginAttempts, 
+    resetLoginAttempts,
+    isAuthenticated,
+    isTokenExpired
+  } = useAuthStore();
+
   const { cpf, handleCpfChange } = useCpfFormat();
 
   const {
@@ -33,15 +43,26 @@ export default function Login() {
     resolver: zodResolver(loginSchema),
   });
 
+  // Verificar se o usuário já está autenticado
+  useEffect(() => {
+    if (isAuthenticated && !isTokenExpired()) {
+      console.log('Usuário já autenticado. Redirecionando...');
+      const from = location.state?.from?.pathname || '/dashboard';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, isTokenExpired, navigate, location.state?.from?.pathname]);
+
   const onSubmit = async (data: LoginFormData) => {
     clearError();
     try {
       await login(data);
       // Redirecionar para a página original ou dashboard
       const from = location.state?.from?.pathname || '/dashboard';
+      console.log('Login bem-sucedido. Redirecionando para:', from);
       navigate(from, { replace: true });
     } catch (error) {
       // Erro já tratado no store
+      console.error('Erro no login:', error);
     }
   };
 
@@ -50,13 +71,25 @@ export default function Login() {
     resetLoginAttempts();
   }, [resetLoginAttempts]);
 
+  // Se o usuário já está autenticado, mostrar loading
+  if (isAuthenticated && !isTokenExpired()) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Redirecionando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex">
       {/* Lado esquerdo - Formulário */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
-            <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-r from-primary-500 to-primary-600 shadow-lg">
+            <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg">
               <LogIn className="h-8 w-8 text-white" />
             </div>
             <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -79,7 +112,7 @@ export default function Login() {
                   id="cpf"
                   value={cpf}
                   onChange={(e) => handleCpfChange(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
                   placeholder="000.000.000-00"
                 />
                 {errors.cpf && (
@@ -99,7 +132,7 @@ export default function Login() {
                     {...register('password')}
                     type={showPassword ? 'text' : 'password'}
                     id="password"
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 shadow-sm"
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
                     placeholder="••••••••"
                   />
                   <button
@@ -153,7 +186,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading || loginAttempts >= 3}
-              className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               {isLoading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -176,14 +209,14 @@ export default function Login() {
       </div>
 
       {/* Lado direito - Ilustração */}
-      <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 relative overflow-hidden">
+      <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 relative overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-10"></div>
         <div className="relative z-10 flex flex-col justify-center px-12 py-12">
           <div className="max-w-lg">
             <h1 className="text-4xl font-bold text-white mb-6">
               Gerencie seu estoque de forma inteligente
             </h1>
-            <p className="text-xl text-primary-100 mb-8">
+            <p className="text-xl text-blue-100 mb-8">
               Controle vendas, estoque e relatórios em uma única plataforma. 
               Simplifique a gestão da sua loja de peças.
             </p>
@@ -196,7 +229,7 @@ export default function Login() {
                 </div>
                 <div>
                   <h3 className="text-white font-medium">Controle de Estoque</h3>
-                  <p className="text-primary-200 text-sm">Gerencie produtos e quantidades</p>
+                  <p className="text-blue-200 text-sm">Gerencie produtos e quantidades</p>
                 </div>
               </div>
               
@@ -206,7 +239,7 @@ export default function Login() {
                 </div>
                 <div>
                   <h3 className="text-white font-medium">Vendas e Relatórios</h3>
-                  <p className="text-primary-200 text-sm">Acompanhe o crescimento do negócio</p>
+                  <p className="text-blue-200 text-sm">Acompanhe o crescimento do negócio</p>
                 </div>
               </div>
               
@@ -216,7 +249,7 @@ export default function Login() {
                 </div>
                 <div>
                   <h3 className="text-white font-medium">Gestão de Clientes</h3>
-                  <p className="text-primary-200 text-sm">Organize informações dos clientes</p>
+                  <p className="text-blue-200 text-sm">Organize informações dos clientes</p>
                 </div>
               </div>
             </div>

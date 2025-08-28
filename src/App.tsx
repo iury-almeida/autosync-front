@@ -6,6 +6,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ProductList from './pages/ProductList';
 import ProductRegistration from './pages/ProductRegistration';
+import { useTokenRefresh } from './hooks/useTokenRefresh';
+import TokenExpirationAlert from './components/TokenExpirationAlert';
 
 // Criar uma instância do QueryClient
 const queryClient = new QueryClient({
@@ -17,9 +19,13 @@ const queryClient = new QueryClient({
   },
 });
 
-function App() {
+function AppContent() {
+  // Usar o hook de refresh do token
+  useTokenRefresh();
+
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
+      <TokenExpirationAlert />
       <Router>
         <Routes>
           {/* Rota pública */}
@@ -120,6 +126,14 @@ function App() {
           />
         </Routes>
       </Router>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
     </QueryClientProvider>
   );
 }

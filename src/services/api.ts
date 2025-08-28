@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { ApiResponse } from '../types';
+import { useAuthStore } from '../stores/authStore';
 
 // Configuração base do axios
 const api = axios.create({
@@ -10,16 +11,24 @@ const api = axios.create({
 // Interceptor para adicionar token de autenticação
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('auth-storage');
+    const authStore = useAuthStore.getState();
+    const { token, isTokenExpired } = authStore;
+    
+    // Verificar se o token expirou antes de fazer a requisição
+    if (token && isTokenExpired()) {
+      console.log('Token expirado detectado no interceptor de requisição');
+      authStore.logout();
+      // Redirecionar para login
+      window.location.href = '/login';
+      return Promise.reject(new Error('Token expirado'));
+    }
+
     if (token) {
       try {
-        const authData = JSON.parse(token);
-        if (authData.state?.token) {
-          // O token já vem com "Bearer " do backend, então não precisamos adicionar novamente
-          config.headers.Authorization = authData.state.token;
-        }
+        // O token já vem com "Bearer " do backend, então não precisamos adicionar novamente
+        config.headers.Authorization = token;
       } catch (error) {
-        console.error('Erro ao parsear token:', error);
+        console.error('Erro ao adicionar token:', error);
       }
     }
     return config;
@@ -35,11 +44,19 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    const authStore = useAuthStore.getState();
+    
     if (error.response?.status === 401) {
       // Token expirado ou inválido
-      localStorage.removeItem('auth-storage');
-      window.location.href = '/login';
+      console.log('Erro 401 detectado. Fazendo logout...');
+      authStore.logout();
+      
+      // Redirecionar para login apenas se não estiver já na página de login
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
+    
     return Promise.reject(error);
   }
 );

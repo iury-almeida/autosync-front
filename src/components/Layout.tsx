@@ -13,6 +13,7 @@ import {
   Bell
 } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
+import AuthStatus from './AuthStatus';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -44,7 +45,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="fixed inset-y-0 left-0 flex w-80 flex-col bg-white shadow-xl">
           <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+              <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <Package className="h-5 w-5 text-white" />
               </div>
               <h1 className="text-xl font-bold text-gray-900">AutoSync</h1>
@@ -65,12 +66,12 @@ export default function Layout({ children }: LayoutProps) {
                   to={item.href}
                   className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary-50 text-primary-700 border border-primary-200 shadow-sm'
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <item.icon className={`mr-3 h-5 w-5 ${isActive ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                  <item.icon className={`mr-3 h-5 w-5 ${isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
                   {item.name}
                 </Link>
               );
@@ -80,7 +81,7 @@ export default function Layout({ children }: LayoutProps) {
           {/* Perfil do usuário mobile */}
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
                 <User className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1">
@@ -103,7 +104,7 @@ export default function Layout({ children }: LayoutProps) {
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200 shadow-sm">
           <div className="flex h-16 items-center px-6 border-b border-gray-200">
             <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
+              <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <Package className="h-5 w-5 text-white" />
               </div>
               <h1 className="text-xl font-bold text-gray-900">AutoSync</h1>
@@ -118,11 +119,11 @@ export default function Layout({ children }: LayoutProps) {
                   to={item.href}
                   className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                     isActive
-                      ? 'bg-primary-50 text-primary-700 border border-primary-200 shadow-sm'
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200 shadow-sm'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                   }`}
                 >
-                  <item.icon className={`mr-3 h-5 w-5 ${isActive ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
+                  <item.icon className={`mr-3 h-5 w-5 ${isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
                   {item.name}
                 </Link>
               );
@@ -132,7 +133,7 @@ export default function Layout({ children }: LayoutProps) {
           {/* Perfil do usuário desktop */}
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
                 <User className="h-5 w-5 text-white" />
               </div>
               <div className="flex-1">
@@ -166,6 +167,9 @@ export default function Layout({ children }: LayoutProps) {
           <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
             <div className="flex flex-1" />
             <div className="flex items-center gap-x-4 lg:gap-x-6">
+              {/* Status de autenticação */}
+              <AuthStatus />
+
               {/* Notificações */}
               <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
                 <Bell className="h-5 w-5" />
@@ -182,7 +186,7 @@ export default function Layout({ children }: LayoutProps) {
 
               {/* Perfil do usuário */}
               <div className="flex items-center gap-x-2">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
                   <User className="h-4 w-4 text-white" />
                 </div>
                 <div className="hidden lg:block">

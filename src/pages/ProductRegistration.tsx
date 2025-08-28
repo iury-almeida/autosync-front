@@ -108,27 +108,27 @@ export default function ProductRegistration() {
     setMessage(null);
   };
 
-  const handleDelete = async () => {
-    if (confirm('Tem certeza que deseja excluir este produto?')) {
-      // TODO: Implementar exclusão quando tiver um produto carregado
-      showMessage('error', 'Funcionalidade de exclusão será implementada');
-    }
-  };
+  // const handleDelete = async () => {
+  //   if (confirm('Tem certeza que deseja excluir este produto?')) {
+  //     // TODO: Implementar exclusão quando tiver um produto carregado
+  //     showMessage('error', 'Funcionalidade de exclusão será implementada');
+  //   }
+  // };
 
-  const handleSearch = () => {
-    // TODO: Implementar busca
-    showMessage('error', 'Funcionalidade de busca será implementada');
-  };
+  // const handleSearch = () => {
+  //   // TODO: Implementar busca
+  //   showMessage('error', 'Funcionalidade de busca será implementada');
+  // };
 
-  const handleCopy = () => {
-    // TODO: Implementar cópia
-    showMessage('error', 'Funcionalidade de cópia será implementada');
-  };
+  // const handleCopy = () => {
+  //   // TODO: Implementar cópia
+  //   showMessage('error', 'Funcionalidade de cópia será implementada');
+  // };
 
-  const handlePrint = () => {
-    // TODO: Implementar impressão
-    showMessage('error', 'Funcionalidade de impressão será implementada');
-  };
+  // const handlePrint = () => {
+  //   // TODO: Implementar impressão
+  //   showMessage('error', 'Funcionalidade de impressão será implementada');
+  // };
 
   const handleViewManual = () => {
     const manual = watch('manual');
