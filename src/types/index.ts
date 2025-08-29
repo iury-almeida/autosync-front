@@ -8,6 +8,40 @@ export interface User {
   updatedAt: string;
 }
 
+// Tipos para Usuario baseados na estrutura do banco de dados
+export interface Usuario {
+  idUsuario: number;
+  idPerfil: number;
+  nomeCompleto: string;
+  apelido: string;
+  temNomeSocial: boolean;
+  nomeSocial: string;
+  telefone: string;
+  email: string;
+  cpf: string;
+  senha: string;
+  dataCadastro: string;
+  ultimoAcesso: string;
+  status: string;
+}
+
+export interface CreateUsuarioData {
+  idPerfil: number;
+  nomeCompleto: string;
+  apelido?: string; // Opcional
+  temNomeSocial: boolean;
+  nomeSocial?: string; // Opcional
+  telefone: string;
+  email: string;
+  cpf: string;
+  senha: string; // Obrigatório no cadastro
+  status: string;
+}
+
+export interface UpdateUsuarioData extends Partial<CreateUsuarioData> {
+  idUsuario: number;
+}
+
 // Tipos de autenticação
 export interface LoginCredentials {
   cpf: string;
@@ -119,6 +153,18 @@ export interface ApiResponse<T> {
   data: T;
   message?: string;
   success: boolean;
+}
+
+// Nova estrutura para resposta de listagem de usuários
+export interface ListaUsuariosResponse {
+  acesso: string;
+  listaUsuarios: {
+    paginaAtual: number;
+    tamanhoPagina: number;
+    dados: Usuario[];
+    totalPaginas: number;
+    totalRegistros: number;
+  };
 }
 
 export interface PaginatedResponse<T> {

@@ -1,4 +1,4 @@
-import { Package, ShoppingCart, TrendingUp, AlertTriangle, Plus, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Package, ShoppingCart, TrendingUp, AlertTriangle, Plus, ArrowUpRight, ArrowDownRight, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AuthStatus from '../components/AuthStatus';
 
@@ -255,6 +255,14 @@ export default function Dashboard() {
           <button className="flex items-center justify-center px-6 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-200 group">
             <AlertTriangle className="h-6 w-6 text-primary-600 mr-3 group-hover:scale-110 transition-transform" />
             <span className="font-medium text-gray-900">Estoque Baixo</span>
+          </button>
+
+          <button 
+            onClick={() => navigate('/usuarios')}
+            className="flex items-center justify-center px-6 py-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+          >
+            <Users className="h-6 w-6 text-primary-600 mr-3 group-hover:scale-110 transition-transform" />
+            <span className="font-medium text-gray-900">Gestão de Usuários</span>
           </button>
         </div>
       </div>

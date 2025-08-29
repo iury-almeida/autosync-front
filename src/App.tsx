@@ -6,6 +6,10 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ProductList from './pages/ProductList';
 import ProductRegistration from './pages/ProductRegistration';
+import UsuarioList from './pages/UsuarioList';
+import UsuarioRegistration from './pages/UsuarioRegistration';
+import UsuarioEdit from './pages/UsuarioEdit';
+import UsuarioView from './pages/UsuarioView';
 import { useTokenRefresh } from './hooks/useTokenRefresh';
 import TokenExpirationAlert from './components/TokenExpirationAlert';
 
@@ -65,6 +69,51 @@ function AppContent() {
               <ProtectedRoute>
                 <Layout>
                   <ProductRegistration />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Rotas de usuários */}
+          <Route
+            path="/usuarios"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <UsuarioList />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/usuarios/cadastrar"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <UsuarioRegistration />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/usuarios/editar"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <UsuarioEdit />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/usuarios/visualizar"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <UsuarioView />
                 </Layout>
               </ProtectedRoute>
             }
