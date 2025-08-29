@@ -5,14 +5,10 @@ import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { 
   Save, 
-  X, 
-  Search, 
   Eye,
-  Plus,
   CheckCircle,
   AlertCircle,
   ArrowLeft,
-  User,
   EyeOff
 } from 'lucide-react';
 import type { CreateUsuarioData } from '../types';
@@ -25,13 +21,17 @@ const usuarioSchema = z.object({
   idPerfil: z.number().min(1, 'Perfil é obrigatório'),
   nomeCompleto: z.string().min(1, 'Nome completo é obrigatório'),
   apelido: z.string().optional(), // Não é obrigatório no backend
-  temNomeSocial: z.boolean(),
+  temNomeSocial: z.string().refine(val => val === 'S' || val === 'N', 'Deve ser S ou N'),
   nomeSocial: z.string().optional(),
   telefone: z.string().min(1, 'Telefone é obrigatório'),
   email: z.string().email('Email inválido'),
   cpf: z.string().min(11, 'CPF deve ter 11 dígitos'),
   senha: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
+  confirmarSenha: z.string().min(1, 'Confirmação de senha é obrigatória'),
   status: z.string().min(1, 'Status é obrigatório'),
+}).refine((data) => data.senha === data.confirmarSenha, {
+  message: "As senhas não coincidem",
+  path: ["confirmarSenha"],
 });
 
 type UsuarioFormData = z.infer<typeof usuarioSchema>;
@@ -40,6 +40,7 @@ export default function UsuarioRegistration() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const { cpf, setCpf, handleCpfChange } = useCpfFormat();
   const { phone, setPhone, handlePhoneChange } = usePhoneFormat();
@@ -47,7 +48,7 @@ export default function UsuarioRegistration() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
     reset,
     watch,
     setValue,
@@ -55,9 +56,10 @@ export default function UsuarioRegistration() {
     resolver: zodResolver(usuarioSchema),
     defaultValues: {
       idPerfil: 1,
-      temNomeSocial: false,
+      temNomeSocial: 'N',
       status: 'ATIVO',
     },
+    mode: 'onChange',
   });
 
   const temNomeSocial = watch('temNomeSocial');
@@ -68,17 +70,40 @@ export default function UsuarioRegistration() {
   };
 
   const onSubmit = async (data: UsuarioFormData) => {
+    console.log('onSubmit foi chamado!');
     setIsLoading(true);
     setMessage(null);
     
+    // Preparar dados para enviar ao backend
+    const mapStatus = (s: string) => {
+      switch (s) {
+        case 'ATIVO':
+          return 'A';
+        case 'INATIVO':
+          return 'I';
+        case 'BLOQUEADO':
+          return 'B';
+        default:
+          return s;
+      }
+    };
+
+    const dadosParaEnviar = {
+      ...data,
+      nomeSocial: data.temNomeSocial === 'S' ? data.nomeSocial || '' : '',
+      confirmarSenha: data.confirmarSenha,
+      status: mapStatus(data.status),
+    };
+    
+    console.log('Dados do formulário:', data);
+    console.log('Dados para enviar:', dadosParaEnviar);
+    console.log('Erros de validação:', errors);
+    
     try {
-      const response = await usuarioService.cadastrarUsuario(data as CreateUsuarioData);
+      const response = await usuarioService.cadastrarUsuario(dadosParaEnviar as CreateUsuarioData);
       
-      if (response.success) {
-        showMessage('success', 'Usuário cadastrado com sucesso!');
-        reset();
-        setCpf('');
-        setPhone('');
+      if (response.status) {
+        navigate('/usuarios');
       } else {
         showMessage('error', response.message || 'Erro ao cadastrar usuário');
       }
@@ -91,19 +116,7 @@ export default function UsuarioRegistration() {
     }
   };
 
-  const handleNew = () => {
-    reset();
-    setMessage(null);
-    setCpf('');
-    setPhone('');
-  };
-
-  const handleCancel = () => {
-    reset();
-    setMessage(null);
-    setCpf('');
-    setPhone('');
-  };
+  // Removido handleReset não utilizado
 
   const handleGoBack = () => {
     navigate(-1);
@@ -153,39 +166,26 @@ export default function UsuarioRegistration() {
             </button>
             <h1 className="text-2xl font-bold">CADASTRAR USUÁRIO</h1>
           </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handleNew}
-              className="flex items-center space-x-1 bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Novo</span>
-            </button>
-            <button
-              onClick={handleSubmit(onSubmit)}
-              disabled={isLoading}
-              className="flex items-center space-x-1 bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm disabled:opacity-50"
-            >
-              <Save className="h-4 w-4" />
-              <span>Salvar</span>
-            </button>
-            <button
-              onClick={handleCancel}
-              className="flex items-center space-x-1 bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm"
-            >
-              <X className="h-4 w-4" />
-              <span>Cancelar</span>
-            </button>
-          </div>
+                     <div className="flex items-center space-x-2">
+             <button
+               onClick={handleSubmit(onSubmit)}
+               disabled={isLoading || !isValid}
+               className="flex items-center space-x-1 bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+             >
+               <Save className="h-4 w-4" />
+               <span>Salvar</span>
+             </button>
+           </div>
         </div>
       </div>
 
       {/* Conteúdo Principal */}
       <div className="p-6">
-        <div className="bg-white rounded-lg shadow-lg">
-          <div className="p-6">
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="bg-white rounded-lg shadow-lg">
+            <div className="p-6">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Perfil */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -239,10 +239,13 @@ export default function UsuarioRegistration() {
                 {/* Tem Nome Social */}
                 <div className="flex items-center space-x-2">
                   <input
-                    {...register('temNomeSocial')}
                     type="checkbox"
                     id="temNomeSocial"
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    checked={temNomeSocial === 'S'}
+                    onChange={(e) => {
+                      setValue('temNomeSocial', e.target.checked ? 'S' : 'N');
+                    }}
                   />
                   <label htmlFor="temNomeSocial" className="text-sm font-medium text-gray-700">
                     Possui Nome Social
@@ -250,7 +253,7 @@ export default function UsuarioRegistration() {
                 </div>
 
                 {/* Nome Social */}
-                {temNomeSocial && (
+                {temNomeSocial === 'S' && (
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Nome Social
@@ -314,30 +317,55 @@ export default function UsuarioRegistration() {
                   )}
                 </div>
 
-                {/* Senha */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Senha <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      {...register('senha')}
-                      type={showPassword ? 'text' : 'password'}
-                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Digite a senha"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {errors.senha && (
-                    <p className="mt-1 text-sm text-red-600">{errors.senha.message}</p>
-                  )}
-                </div>
+                                 {/* Senha */}
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                     Senha <span className="text-red-500">*</span>
+                   </label>
+                   <div className="relative">
+                     <input
+                       {...register('senha')}
+                       type={showPassword ? 'text' : 'password'}
+                       className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       placeholder="Digite a senha"
+                     />
+                     <button
+                       type="button"
+                       onClick={() => setShowPassword(!showPassword)}
+                       className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                     >
+                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                     </button>
+                   </div>
+                   {errors.senha && (
+                     <p className="mt-1 text-sm text-red-600">{errors.senha.message}</p>
+                   )}
+                 </div>
+
+                 {/* Confirmar Senha */}
+                 <div>
+                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                     Confirmar Senha <span className="text-red-500">*</span>
+                   </label>
+                   <div className="relative">
+                     <input
+                       {...register('confirmarSenha')}
+                       type={showConfirmPassword ? 'text' : 'password'}
+                       className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       placeholder="Confirme a senha"
+                     />
+                     <button
+                       type="button"
+                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                       className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                     >
+                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                     </button>
+                   </div>
+                   {errors.confirmarSenha && (
+                     <p className="mt-1 text-sm text-red-600">{errors.confirmarSenha.message}</p>
+                   )}
+                 </div>
 
                 {/* Status */}
                 <div>
@@ -356,10 +384,11 @@ export default function UsuarioRegistration() {
                     <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>
                   )}
                 </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

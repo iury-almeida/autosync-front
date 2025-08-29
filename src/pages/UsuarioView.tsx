@@ -137,7 +137,7 @@ export default function UsuarioView() {
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">{usuario.nomeCompleto}</h2>
                 <p className="text-gray-600">{usuario.apelido}</p>
-                {usuario.temNomeSocial && usuario.nomeSocial && (
+                {usuario.temNomeSocial === 'S' && usuario.nomeSocial && (
                   <p className="text-blue-600 text-sm">Nome Social: {usuario.nomeSocial}</p>
                 )}
               </div>
@@ -166,7 +166,7 @@ export default function UsuarioView() {
                     <label className="block text-sm font-medium text-gray-500">Apelido</label>
                     <p className="text-sm text-gray-900">{usuario.apelido}</p>
                   </div>
-                  {usuario.temNomeSocial && usuario.nomeSocial && (
+                  {usuario.temNomeSocial === 'S' && usuario.nomeSocial && (
                     <div>
                       <label className="block text-sm font-medium text-gray-500">Nome Social</label>
                       <p className="text-sm text-gray-900">{usuario.nomeSocial}</p>

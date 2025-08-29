@@ -4,21 +4,21 @@ import type { Usuario, CreateUsuarioData, UpdateUsuarioData, ApiResponse, ListaU
 class UsuarioService {
   // Listar todos os usuários
   async listarUsuarios(): Promise<ApiResponse<Usuario[]>> {
-    const response = await apiGet<ListaUsuariosResponse>('/Usuario/listarusuarios');
+    const response = await apiGet<ListaUsuariosResponse>('/Usuario/listarusuarios') as unknown as ListaUsuariosResponse;
     
     // Transformar a resposta para o formato esperado pelo frontend
-    if (response.success && response.data) {
+    if (response.acesso === 'ok' && response.listaUsuarios) {
       return {
-        success: true,
-        data: response.data.listaUsuarios.dados,
-        message: response.message
+        status: true,
+        data: response.listaUsuarios.dados,
+        message: 'Usuários carregados com sucesso'
       };
     }
     
     return {
-      success: false,
+      status: false,
       data: [],
-      message: response.message || 'Erro ao carregar usuários'
+      message: 'Erro ao carregar usuários'
     };
   }
 

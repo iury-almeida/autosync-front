@@ -5,14 +5,10 @@ import { z } from 'zod';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Save, 
-  X, 
-  Search, 
   Eye,
-  Plus,
   CheckCircle,
   AlertCircle,
   ArrowLeft,
-  User,
   EyeOff
 } from 'lucide-react';
 import type { UpdateUsuarioData, Usuario } from '../types';
@@ -25,15 +21,34 @@ const usuarioSchema = z.object({
   idPerfil: z.number().min(1, 'Perfil é obrigatório'),
   nomeCompleto: z.string().min(1, 'Nome completo é obrigatório'),
   apelido: z.string().optional(), // Não é obrigatório no backend
-  temNomeSocial: z.boolean(),
+  temNomeSocial: z.string().refine(val => val === 'S' || val === 'N', 'Deve ser S ou N'),
   nomeSocial: z.string().optional(),
   telefone: z.string().min(1, 'Telefone é obrigatório'),
   email: z.string().email('Email inválido'),
   cpf: z.string().min(11, 'CPF deve ter 11 dígitos'),
   senha: z.string().optional().refine((val) => !val || val.length >= 6, {
     message: 'Senha deve ter pelo menos 6 caracteres'
-  }), // Opcional na edição, mas se informada deve ter 6+ caracteres
+  }),
+  confirmarSenha: z.string().optional(),
   status: z.string().min(1, 'Status é obrigatório'),
+}).superRefine((data, ctx) => {
+  const senhaInformada = !!data.senha && data.senha.trim() !== '';
+  const confirmarInformado = !!data.confirmarSenha && data.confirmarSenha.trim() !== '';
+  if (senhaInformada || confirmarInformado) {
+    if (!senhaInformada || !confirmarInformado) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['confirmarSenha'],
+        message: 'Preencha e confirme a nova senha',
+      });
+    } else if (data.senha !== data.confirmarSenha) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['confirmarSenha'],
+        message: 'As senhas não coincidem',
+      });
+    }
+  }
 });
 
 type UsuarioFormData = z.infer<typeof usuarioSchema>;
@@ -43,6 +58,7 @@ export default function UsuarioEdit() {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const { cpf, setCpf, handleCpfChange } = useCpfFormat();
@@ -51,17 +67,17 @@ export default function UsuarioEdit() {
   const {
     register,
     handleSubmit,
-    formState: { errors },
-    reset,
+    formState: { errors, isValid },
     watch,
     setValue,
   } = useForm<UsuarioFormData>({
     resolver: zodResolver(usuarioSchema),
     defaultValues: {
       idPerfil: 1,
-      temNomeSocial: false,
+      temNomeSocial: 'N',
       status: 'ATIVO',
     },
+    mode: 'onChange',
   });
 
   const temNomeSocial = watch('temNomeSocial');
@@ -103,38 +119,51 @@ export default function UsuarioEdit() {
     setMessage(null);
     
     try {
-      // Se a senha não foi alterada, remover do objeto
-      const updateData: UpdateUsuarioData = { 
-        ...data,
-        idUsuario: usuario.idUsuario 
+      // Mapear status e preparar payload exigido pelo backend
+      const mapStatus = (s: string) => {
+        switch (s) {
+          case 'ATIVO':
+            return 'A';
+          case 'INATIVO':
+            return 'I';
+          case 'BLOQUEADO':
+            return 'B';
+          default:
+            return s;
+        }
       };
-      if (!data.senha || data.senha.trim() === '') {
-        delete updateData.senha;
+
+      const updateData: UpdateUsuarioData = {
+        ...data,
+        idUsuario: usuario.idUsuario,
+        nomeSocial: data.temNomeSocial === 'S' ? data.nomeSocial || '' : '',
+        status: mapStatus(data.status),
+      } as any;
+
+      // Só incluir senha/confirmarSenha se ambos foram informados
+      if (data.senha && data.senha.trim() !== '' && data.confirmarSenha && data.confirmarSenha.trim() !== '') {
+        updateData.senha = data.senha;
+        (updateData as any).confirmarSenha = data.confirmarSenha;
       }
       
       const response = await usuarioService.atualizarUsuario(usuario.idUsuario, updateData);
       
-      if (response.success) {
-        showMessage('success', 'Usuário atualizado com sucesso!');
-        // Redirecionar para a lista após um breve delay
-        setTimeout(() => {
-          navigate('/usuarios');
-        }, 1500);
+      if ((response as any).status === true) {
+        navigate('/usuarios');
       } else {
         showMessage('error', response.message || 'Erro ao atualizar usuário');
       }
     } catch (error: any) {
       console.error('Erro ao atualizar usuário:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Erro ao atualizar usuário';
+      const errorBackend = error.response?.data;
+      const errorMessage = errorBackend?.message || errorBackend?.title || error.message || 'Erro ao atualizar usuário';
       showMessage('error', errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCancel = () => {
-    navigate('/usuarios');
-  };
+  // Removido botão cancelar
 
   const handleGoBack = () => {
     navigate('/usuarios');
@@ -198,18 +227,11 @@ export default function UsuarioEdit() {
           <div className="flex items-center space-x-2">
             <button
               onClick={handleSubmit(onSubmit)}
-              disabled={isLoading}
-              className="flex items-center space-x-1 bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm disabled:opacity-50"
+              disabled={isLoading || !isValid}
+              className="flex items-center space-x-1 bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="h-4 w-4" />
               <span>Salvar</span>
-            </button>
-            <button
-              onClick={handleCancel}
-              className="flex items-center space-x-1 bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm"
-            >
-              <X className="h-4 w-4" />
-              <span>Cancelar</span>
             </button>
           </div>
         </div>
@@ -274,10 +296,13 @@ export default function UsuarioEdit() {
                 {/* Tem Nome Social */}
                 <div className="flex items-center space-x-2">
                   <input
-                    {...register('temNomeSocial')}
                     type="checkbox"
                     id="temNomeSocial"
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    checked={temNomeSocial === 'S'}
+                    onChange={(e) => {
+                      setValue('temNomeSocial', e.target.checked ? 'S' : 'N');
+                    }}
                   />
                   <label htmlFor="temNomeSocial" className="text-sm font-medium text-gray-700">
                     Possui Nome Social
@@ -285,7 +310,7 @@ export default function UsuarioEdit() {
                 </div>
 
                 {/* Nome Social */}
-                {temNomeSocial && (
+                {temNomeSocial === 'S' && (
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Nome Social
@@ -350,16 +375,16 @@ export default function UsuarioEdit() {
                 </div>
 
                 {/* Senha */}
-                <div className="md:col-span-2">
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nova Senha (deixe em branco para manter a atual)
+                    Nova Senha
                   </label>
                   <div className="relative">
                     <input
                       {...register('senha')}
                       type={showPassword ? 'text' : 'password'}
                       className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Digite a nova senha (opcional)"
+                      placeholder="Digite a nova senha"
                     />
                     <button
                       type="button"
@@ -373,6 +398,33 @@ export default function UsuarioEdit() {
                     <p className="mt-1 text-sm text-red-600">{errors.senha.message}</p>
                   )}
                 </div>
+
+                {/* Confirmar Senha */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Confirmar Senha
+                  </label>
+                  <div className="relative">
+                    <input
+                      {...register('confirmarSenha')}
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Confirme a senha"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {errors.confirmarSenha && (
+                    <p className="mt-1 text-sm text-red-600">{errors.confirmarSenha.message}</p>
+                  )}
+                </div>
+
+
 
                 {/* Status */}
                 <div>

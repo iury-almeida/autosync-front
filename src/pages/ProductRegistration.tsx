@@ -83,7 +83,7 @@ export default function ProductRegistration() {
     try {
       const response = await productService.createProduct(data as CreateProductData);
       
-      if (response.success) {
+      if (response.status) {
         showMessage('success', 'Produto salvo com sucesso!');
         reset();
       } else {

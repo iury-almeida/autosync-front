@@ -14,7 +14,7 @@ export interface Usuario {
   idPerfil: number;
   nomeCompleto: string;
   apelido: string;
-  temNomeSocial: boolean;
+  temNomeSocial: string; // Mudou para string ('S' ou 'N')
   nomeSocial: string;
   telefone: string;
   email: string;
@@ -29,12 +29,13 @@ export interface CreateUsuarioData {
   idPerfil: number;
   nomeCompleto: string;
   apelido?: string; // Opcional
-  temNomeSocial: boolean;
+  temNomeSocial: string; // 'S' ou 'N'
   nomeSocial?: string; // Opcional
   telefone: string;
   email: string;
   cpf: string;
   senha: string; // Obrigatório no cadastro
+  confirmarSenha: string; // Obrigatório no cadastro
   status: string;
 }
 
@@ -152,7 +153,7 @@ export interface CreateSaleData {
 export interface ApiResponse<T> {
   data: T;
   message?: string;
-  success: boolean;
+  status: boolean;
 }
 
 // Nova estrutura para resposta de listagem de usuários

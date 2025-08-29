@@ -41,7 +41,7 @@ interface Usuario {
   idPerfil: number;
   nomeCompleto: string;
   apelido: string;
-  temNomeSocial: boolean;
+  temNomeSocial: string; // 'S' ou 'N'
   nomeSocial: string;
   telefone: string;
   email: string;
@@ -64,8 +64,8 @@ interface Usuario {
 
 ### Campos Opcionais
 - **apelido**: Apelido/nickname
-- **temNomeSocial**: Boolean para indicar se possui nome social
-- **nomeSocial**: Nome social (exibido apenas se temNomeSocial = true)
+- **temNomeSocial**: String ('S' ou 'N') para indicar se possui nome social
+- **nomeSocial**: Nome social (exibido apenas se temNomeSocial = 'S')
 
 ## APIs Utilizadas
 
@@ -146,7 +146,7 @@ const usuarioSchema = z.object({
   idPerfil: z.number().min(1, 'Perfil é obrigatório'),
   nomeCompleto: z.string().min(1, 'Nome completo é obrigatório'),
   apelido: z.string().optional(), // Não é obrigatório no backend
-  temNomeSocial: z.boolean(),
+  temNomeSocial: z.string().refine(val => val === 'S' || val === 'N', 'Deve ser S ou N'),
   nomeSocial: z.string().optional(),
   telefone: z.string().min(1, 'Telefone é obrigatório'),
   email: z.string().email('Email inválido'),

@@ -3,7 +3,12 @@ import { useState, useCallback } from 'react';
 export const useCpfFormat = () => {
   const [cpf, setCpf] = useState('');
 
-  const formatCpf = useCallback((value: string) => {
+  const formatCpf = useCallback((value: string | undefined | null) => {
+    // Verifica se o valor é válido
+    if (!value || typeof value !== 'string') {
+      return '';
+    }
+    
     // Remove todos os caracteres não numéricos
     const numbers = value.replace(/\D/g, '');
     

@@ -45,7 +45,7 @@ export default function UsuarioList() {
     setIsLoading(true);
     try {
       const response = await usuarioService.listarUsuarios();
-      if (response.success) {
+      if (response.status) {
         setUsuarios(response.data);
         setFilteredUsuarios(response.data);
         
@@ -100,7 +100,7 @@ export default function UsuarioList() {
     if (confirm(`Tem certeza que deseja excluir o usuário "${nomeCompleto}"?`)) {
       try {
         const response = await usuarioService.excluirUsuario(idUsuario);
-        if (response.success) {
+        if (response.status) {
           showMessage('success', 'Usuário excluído com sucesso!');
           loadUsuarios(); // Recarrega a lista
         } else {
@@ -129,7 +129,7 @@ export default function UsuarioList() {
     navigate(-1);
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | undefined) => {
     switch (status) {
       case 'ATIVO':
         return 'bg-green-100 text-green-800';
@@ -142,7 +142,9 @@ export default function UsuarioList() {
     }
   };
 
-  const getPerfilLabel = (idPerfil: number) => {
+  const getPerfilLabel = (idPerfil: number | undefined) => {
+    if (!idPerfil) return 'Perfil não informado';
+    
     switch (idPerfil) {
       case 1:
         return 'Administrador';
@@ -279,8 +281,12 @@ export default function UsuarioList() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredUsuarios.map((usuario) => (
-                    <tr key={usuario.idUsuario} className="hover:bg-gray-50">
+                  {filteredUsuarios.map((usuario) => {
+                    // Verifica se o usuário existe antes de renderizar
+                    if (!usuario) return null;
+                    
+                    return (
+                      <tr key={usuario.idUsuario} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -288,16 +294,16 @@ export default function UsuarioList() {
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">
-                              {usuario.nomeCompleto}
+                              {usuario.nomeCompleto || 'Nome não informado'}
                             </div>
-                            <div className="text-sm text-gray-500">
-                              {usuario.apelido}
-                            </div>
-                            {usuario.temNomeSocial && usuario.nomeSocial && (
-                              <div className="text-xs text-blue-600">
-                                Nome Social: {usuario.nomeSocial}
-                              </div>
-                            )}
+                                                         <div className="text-sm text-gray-500">
+                               {usuario.apelido || '-'}
+                             </div>
+                             {usuario.temNomeSocial === 'S' && usuario.nomeSocial && (
+                               <div className="text-xs text-blue-600">
+                                 Nome Social: {usuario.nomeSocial}
+                               </div>
+                             )}
                           </div>
                         </div>
                       </td>
@@ -305,14 +311,15 @@ export default function UsuarioList() {
                         <div className="text-sm text-gray-900">
                           <div className="flex items-center mb-1">
                             <Mail className="h-3 w-3 text-gray-400 mr-1" />
-                            {usuario.email}
+                            {usuario.email || 'Email não informado'}
                           </div>
                           <div className="flex items-center mb-1">
                             <Phone className="h-3 w-3 text-gray-400 mr-1" />
-                            {usuario.telefone}
+                            {usuario.telefone || 'Telefone não informado'}
                           </div>
                           <div className="text-xs text-gray-500">
-                            CPF: {formatCpf(usuario.cpf)}
+                            CPF: {usuario.cpf ? formatCpf(usuario.cpf) : '-'
+                            }
                           </div>
                         </div>
                       </td>
@@ -326,7 +333,7 @@ export default function UsuarioList() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(usuario.status)}`}>
-                          {usuario.status}
+                          {usuario.status || 'Status não informado'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -360,9 +367,10 @@ export default function UsuarioList() {
                           </button>
                         </div>
                       </td>
-                    </tr>
-                  ))}
-                </tbody>
+                                          </tr>
+                    );
+                  })}
+                  </tbody>
               </table>
             </div>
           )}
