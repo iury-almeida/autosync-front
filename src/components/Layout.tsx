@@ -24,6 +24,7 @@ const navigation = [
   { name: 'Produtos', href: '/produtos', icon: Package },
   { name: 'Vendas', href: '/vendas', icon: ShoppingCart },
   { name: 'Relatórios', href: '/relatorios', icon: BarChart3 },
+  { name: 'Usuários', href: '/usuarios', icon: User }
 ];
 
 export default function Layout({ children }: LayoutProps) {
