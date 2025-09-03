@@ -4,7 +4,6 @@ import {
   Plus, 
   Search, 
   Filter, 
-  MoreHorizontal,
   Edit,
   Trash2,
   Eye,
@@ -90,7 +89,7 @@ const mockProducts = [
 export default function ProductList() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
+  // const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
 
   const handleAddProduct = () => {
     navigate('/produtos/cadastro');

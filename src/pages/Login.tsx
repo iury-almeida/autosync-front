@@ -202,7 +202,7 @@ export default function Login() {
           <div className="text-center">
             <p className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
               <strong>Credenciais de Teste:</strong><br />
-              123.456.789-00 / 123456
+              123.456.789-09 / teste123
             </p>
           </div>
         </div>
@@ -216,10 +216,10 @@ export default function Login() {
             <h1 className="text-4xl font-bold text-white mb-6">
               Gerencie seu estoque de forma inteligente
             </h1>
-            <p className="text-xl text-blue-100 mb-8">
+            {/* <p className="text-xl text-blue-100 mb-8">
               Controle vendas, estoque e relatórios em uma única plataforma. 
               Simplifique a gestão da sua loja de peças.
-            </p>
+            </p> */}
             
             {/* Cards de features */}
             <div className="space-y-4">

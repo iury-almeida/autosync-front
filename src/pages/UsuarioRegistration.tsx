@@ -42,14 +42,13 @@ export default function UsuarioRegistration() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const { cpf, setCpf, handleCpfChange } = useCpfFormat();
-  const { phone, setPhone, handlePhoneChange } = usePhoneFormat();
+  const { cpf, handleCpfChange } = useCpfFormat();
+  const { phone, handlePhoneChange } = usePhoneFormat();
 
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
-    reset,
     watch,
     setValue,
   } = useForm<UsuarioFormData>({

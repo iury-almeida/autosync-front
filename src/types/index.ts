@@ -65,19 +65,12 @@ export interface Product {
   descricaoPDV: string;
   fornecedor: string;
   usaGrade: 'SIM' | 'NÃO';
-  modelo: string;
   marca: string;
   cor: string;
-  grupo: string;
-  subGrupo: string;
-  unidEntrada: string;
-  unidSaida: string;
+  unidMedida: string;
   observacao: string;
   manual: string;
   ativo: 'SIM' | 'NÃO';
-  contEstoque: 'SIM' | 'NÃO';
-  garantia: string;
-  materiaPrima: string;
   dataCadastro: string;
   horaCadastro: string;
   dataAlteracao: string;
@@ -99,19 +92,12 @@ export interface CreateProductData {
   descricaoPDV: string;
   fornecedor: string;
   usaGrade: 'SIM' | 'NÃO';
-  modelo: string;
   marca: string;
   cor: string;
-  grupo: string;
-  subGrupo: string;
-  unidEntrada: string;
-  unidSaida: string;
+  unidMedida: string;
   observacao: string;
   manual: string;
   ativo: 'SIM' | 'NÃO';
-  contEstoque: 'SIM' | 'NÃO';
-  garantia: string;
-  materiaPrima: string;
 }
 
 export interface UpdateProductData extends Partial<CreateProductData> {

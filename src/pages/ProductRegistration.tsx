@@ -5,16 +5,8 @@ import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { 
   Save, 
-  X, 
-  Trash2, 
   Search, 
-  Copy, 
-  FileText, 
-  Printer, 
-  LogOut,
   Eye,
-  Plus,
-  Package,
   CheckCircle,
   AlertCircle,
   ArrowLeft
@@ -32,19 +24,12 @@ const productSchema = z.object({
   descricaoPDV: z.string().optional(),
   fornecedor: z.string().optional(),
   usaGrade: z.enum(['SIM', 'NÃO']),
-  modelo: z.string().optional(),
-  marca: z.string().optional(),
+  codFornecedor: z.string().optional(),
   cor: z.string().optional(),
-  grupo: z.string().optional(),
-  subGrupo: z.string().optional(),
-  unidEntrada: z.string().optional(),
-  unidSaida: z.string().optional(),
+  unidMedida: z.string().optional(),
   observacao: z.string().optional(),
   manual: z.string().optional(),
-  ativo: z.enum(['SIM', 'NÃO']),
-  contEstoque: z.enum(['SIM', 'NÃO']),
-  garantia: z.string().optional(),
-  materiaPrima: z.string().optional(),
+  ativo: z.enum(['SIM', 'NÃO'])
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -65,7 +50,6 @@ export default function ProductRegistration() {
     defaultValues: {
       usaGrade: 'NÃO',
       ativo: 'SIM',
-      contEstoque: 'SIM',
       codigoBarra: 'SEM GTIN',
       manual: 'SEM MANUAL',
     },
@@ -96,16 +80,6 @@ export default function ProductRegistration() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleNew = () => {
-    reset();
-    setMessage(null);
-  };
-
-  const handleCancel = () => {
-    reset();
-    setMessage(null);
   };
 
   // const handleDelete = async () => {
@@ -178,26 +152,12 @@ export default function ProductRegistration() {
            </div>
            <div className="flex items-center space-x-2">
              <button
-               onClick={handleNew}
-               className="flex items-center space-x-1 bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm"
-             >
-               <Plus className="h-4 w-4" />
-               <span>Novo</span>
-             </button>
-             <button
                onClick={handleSubmit(onSubmit)}
                disabled={isLoading}
                className="flex items-center space-x-1 bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm disabled:opacity-50"
              >
                <Save className="h-4 w-4" />
                <span>Salvar</span>
-             </button>
-             <button
-               onClick={handleCancel}
-               className="flex items-center space-x-1 bg-yellow-600 hover:bg-yellow-700 px-3 py-1 rounded text-sm"
-             >
-               <X className="h-4 w-4" />
-               <span>Cancelar</span>
              </button>
            </div>
          </div>
@@ -324,30 +284,14 @@ export default function ProductRegistration() {
                     </select>
                   </div>
 
-                  {/* Modelo */}
+                  {/* codFornecedor */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Modelo
+                      cod
                     </label>
                     <div className="relative">
                       <input
-                        {...register('modelo')}
-                        type="text"
-                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="1 PADRÃO"
-                      />
-                      <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
-                    </div>
-                  </div>
-
-                  {/* Marca */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Marca
-                    </label>
-                    <div className="relative">
-                      <input
-                        {...register('marca')}
+                        {...register('codFornecedor')}
                         type="text"
                         className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="1 PADRÃO"
@@ -368,62 +312,14 @@ export default function ProductRegistration() {
                     />
                   </div>
 
-                  {/* Grupo */}
+                  {/* Unid. Medida */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Grupo
+                      Unid. Medida
                     </label>
                     <div className="relative">
                       <input
-                        {...register('grupo')}
-                        type="text"
-                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="1 GRUPO PADRÃO"
-                      />
-                      <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
-                    </div>
-                  </div>
-
-                  {/* Sub Grupo */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Sub Grupo
-                    </label>
-                    <div className="relative">
-                      <input
-                        {...register('subGrupo')}
-                        type="text"
-                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="1 SUBGRUPO PADRÃO"
-                      />
-                      <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
-                    </div>
-                  </div>
-
-                  {/* Unid. Entrada */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Unid. Entrada
-                    </label>
-                    <div className="relative">
-                      <input
-                        {...register('unidEntrada')}
-                        type="text"
-                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="1 UN"
-                      />
-                      <Search className="absolute right-3 top-2.5 h-4 w-4 text-gray-400" />
-                    </div>
-                  </div>
-
-                  {/* Unid. Saída */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Unid. Saída
-                    </label>
-                    <div className="relative">
-                      <input
-                        {...register('unidSaida')}
+                        {...register('unidMedida')}
                         type="text"
                         className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="1 UN"
@@ -445,7 +341,7 @@ export default function ProductRegistration() {
                     />
                   </div>
 
-                                     {/* Manual */}
+                  {/* Manual */}
                    <div className="md:col-span-2">
                      <label className="block text-sm font-medium text-gray-700 mb-1">
                        Manual
@@ -479,46 +375,6 @@ export default function ProductRegistration() {
                        <option value="SIM">SIM</option>
                        <option value="NÃO">NÃO</option>
                      </select>
-                   </div>
-
-                   {/* Cont. Estoque */}
-                   <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                       Cont. Estoque
-                     </label>
-                     <select
-                       {...register('contEstoque')}
-                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                     >
-                       <option value="SIM">SIM</option>
-                       <option value="NÃO">NÃO</option>
-                     </select>
-                   </div>
-
-                   {/* Garantia */}
-                   <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                       Garantia
-                     </label>
-                     <input
-                       {...register('garantia')}
-                       type="text"
-                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                       placeholder="Ex: 12 meses"
-                     />
-                   </div>
-
-                   {/* Matéria Prima */}
-                   <div>
-                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                       Matéria Prima
-                     </label>
-                     <input
-                       {...register('materiaPrima')}
-                       type="text"
-                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                       placeholder="Ex: Aço 1045"
-                     />
                    </div>
                  </div>
                </div>

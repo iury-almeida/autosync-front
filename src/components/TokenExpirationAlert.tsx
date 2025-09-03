@@ -3,7 +3,7 @@ import { AlertTriangle, X, Clock } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 
 export default function TokenExpirationAlert() {
-  const { tokenExpiration, isTokenExpired, refreshToken, logout } = useAuthStore();
+  const { tokenExpiration, refreshToken, logout } = useAuthStore();
   const [showAlert, setShowAlert] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<string>('');
 
@@ -17,7 +17,7 @@ export default function TokenExpirationAlert() {
       const now = Date.now();
       const timeLeft = tokenExpiration - now;
       const fiveMinutes = 5 * 60 * 1000; // 5 minutos
-      const oneMinute = 60 * 1000; // 1 minuto
+      // const oneMinute = 60 * 1000; // 1 minuto
 
       if (timeLeft <= 0) {
         setShowAlert(false);
