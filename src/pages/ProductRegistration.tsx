@@ -25,11 +25,46 @@ const productSchema = z.object({
   fornecedor: z.string().optional(),
   usaGrade: z.enum(['SIM', 'NÃO']),
   codFornecedor: z.string().optional(),
+  codigoFornecedor: z.string().optional(),
   cor: z.string().optional(),
   unidMedida: z.string().optional(),
   observacao: z.string().optional(),
   manual: z.string().optional(),
-  ativo: z.enum(['SIM', 'NÃO'])
+  ativo: z.enum(['SIM', 'NÃO']),
+  // Tributação (campos opcionais)
+  cfopEstado: z.string().optional(),
+  cfopForaEstado: z.string().optional(),
+  origem: z.string().optional(),
+  icmsCsosn: z.string().optional(),
+  icmsCst: z.string().optional(),
+  cofinsCst: z.string().optional(),
+  pisCst: z.string().optional(),
+  ipiCst: z.string().optional(),
+  codigoNcm: z.string().optional(),
+  descricaoNcm: z.string().optional(),
+  codigoCest: z.string().optional(),
+  listaMonofasica: z.string().optional(),
+  aliqIcms: z.string().optional(),
+  aliqIcmsBc: z.string().optional(),
+  aliqCofins: z.string().optional(),
+  aliqPis: z.string().optional(),
+  aliqIpi: z.string().optional(),
+  aliqFcp: z.string().optional(),
+  codBeneficioFiscal: z.string().optional(),
+  // Markup (campos opcionais)
+  compra: z.string().optional(),
+  descontoMax: z.string().optional(),
+  comissaoMax: z.string().optional(),
+  despesa: z.string().optional(),
+  custo: z.string().optional(),
+  margem: z.string().optional(),
+  valorBruto: z.string().optional(),
+  revenda: z.string().optional(),
+  promocaoQtd: z.string().optional(),
+  qtd: z.string().optional(),
+  queima: z.string().optional(),
+  dataInicial: z.string().optional(),
+  dataFinal: z.string().optional()
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -38,6 +73,7 @@ export default function ProductRegistration() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [activeTab, setActiveTab] = useState<'PRODUTO' | 'TRIBUTACAO' | 'MARKUP'>('PRODUTO');
 
   const {
     register,
@@ -169,6 +205,12 @@ export default function ProductRegistration() {
            {/* Conteúdo do Formulário */}
            <div className="p-6">
             <div className="space-y-6">
+                <div className="flex border-b">
+                  <button type="button" onClick={() => setActiveTab('PRODUTO')} className={`px-4 py-2 -mb-px border-b-2 font-medium text-sm ${activeTab === 'PRODUTO' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-600'}`}>Produto</button>
+                  <button type="button" onClick={() => setActiveTab('TRIBUTACAO')} className={`ml-4 px-4 py-2 -mb-px border-b-2 font-medium text-sm ${activeTab === 'TRIBUTACAO' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-600'}`}>Tributação</button>
+                  <button type="button" onClick={() => setActiveTab('MARKUP')} className={`ml-4 px-4 py-2 -mb-px border-b-2 font-medium text-sm ${activeTab === 'MARKUP' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-600'}`}>Markup</button>
+                </div>
+                {activeTab === 'PRODUTO' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {/* Código */}
                   <div>
@@ -202,7 +244,7 @@ export default function ProductRegistration() {
                   {/* Código Fábrica */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Cod. Fábrica
+                      Código Fabricante
                     </label>
                     <input
                       {...register('codFabrica')}
@@ -287,7 +329,7 @@ export default function ProductRegistration() {
                   {/* codFornecedor */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      cod
+                      Código Fornecedor
                     </label>
                     <div className="relative">
                       <input
@@ -303,12 +345,25 @@ export default function ProductRegistration() {
                   {/* Cor */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Cor
+                      Código Montadora
                     </label>
                     <input
                       {...register('cor')}
                       type="text"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  {/* Código Fornecedor */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Código Fornecedor
+                    </label>
+                    <input
+                      {...register('codigoFornecedor')}
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Código do fornecedor"
                     />
                   </div>
 
@@ -377,10 +432,147 @@ export default function ProductRegistration() {
                      </select>
                    </div>
                  </div>
-               </div>
+               )}
+               {activeTab === 'TRIBUTACAO' && (
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">CFOP Estado</label>
+                     <input {...register('cfopEstado')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">CFOP Fora Estado</label>
+                     <input {...register('cfopForaEstado')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Origem</label>
+                     <input {...register('origem')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">ICMS/CSOSN</label>
+                     <input {...register('icmsCsosn')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">ICMS CST</label>
+                     <input {...register('icmsCst')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">COFINS CST</label>
+                     <input {...register('cofinsCst')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">PIS CST</label>
+                     <input {...register('pisCst')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">IPI CST</label>
+                     <input {...register('ipiCst')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Código NCM</label>
+                     <input {...register('codigoNcm')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div className="md:col-span-2">
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Descrição NCM</label>
+                     <input {...register('descricaoNcm')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Código CEST</label>
+                     <input {...register('codigoCest')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Lista Monofásica</label>
+                     <input {...register('listaMonofasica')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Alíq. ICMS</label>
+                     <input {...register('aliqIcms')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Alíq. ICMS BC</label>
+                     <input {...register('aliqIcmsBc')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Alíq. COFINS</label>
+                     <input {...register('aliqCofins')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Alíq. PIS</label>
+                     <input {...register('aliqPis')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Alíq. IPI</label>
+                     <input {...register('aliqIpi')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Alíq. FCP</label>
+                     <input {...register('aliqFcp')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div className="md:col-span-2">
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Cod. Benefício Fiscal</label>
+                     <input {...register('codBeneficioFiscal')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                 </div>
+               )}
+               {activeTab === 'MARKUP' && (
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Compra</label>
+                     <input {...register('compra')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0,00" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Desconto Max</label>
+                     <input {...register('descontoMax')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0,00" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Comissão Max</label>
+                     <input {...register('comissaoMax')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0,00" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Despesa</label>
+                     <input {...register('despesa')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0,00" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Custo</label>
+                     <input {...register('custo')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0,00" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Margem</label>
+                     <input {...register('margem')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0,00" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Valor Bruto</label>
+                     <input {...register('valorBruto')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0,00" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Revenda</label>
+                     <input {...register('revenda')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0,00" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Promoção Qtd</label>
+                     <input {...register('promocaoQtd')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Qtd</label>
+                     <input {...register('qtd')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Queima</label>
+                     <input {...register('queima')} type="text" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0,00" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Data Inicial</label>
+                     <input {...register('dataInicial')} type="date" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                   <div>
+                     <label className="block text-sm font-medium text-gray-700 mb-1">Data Final</label>
+                     <input {...register('dataFinal')} type="date" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                   </div>
+                 </div>
+               )}
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

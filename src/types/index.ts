@@ -98,6 +98,26 @@ export interface CreateProductData {
   observacao: string;
   manual: string;
   ativo: 'SIM' | 'NÃO';
+  // Tributação (opcionais)
+  cfopEstado?: string;
+  cfopForaEstado?: string;
+  origem?: string;
+  icmsCsosn?: string;
+  icmsCst?: string;
+  cofinsCst?: string;
+  pisCst?: string;
+  ipiCst?: string;
+  codigoNcm?: string;
+  descricaoNcm?: string;
+  codigoCest?: string;
+  listaMonofasica?: string;
+  aliqIcms?: string;
+  aliqIcmsBc?: string;
+  aliqCofins?: string;
+  aliqPis?: string;
+  aliqIpi?: string;
+  aliqFcp?: string;
+  codBeneficioFiscal?: string;
 }
 
 export interface UpdateProductData extends Partial<CreateProductData> {
