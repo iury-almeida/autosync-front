@@ -18,34 +18,31 @@ import { usePhoneFormat } from '../hooks/usePhoneFormat';
 
 // Schema de validação para usuários (edição)
 const usuarioSchema = z.object({
-  idPerfil: z.number().min(1, 'Perfil é obrigatório'),
-  nomeCompleto: z.string().min(1, 'Nome completo é obrigatório'),
-  apelido: z.string().optional(), // Não é obrigatório no backend
-  temNomeSocial: z.string().refine(val => val === 'S' || val === 'N', 'Deve ser S ou N'),
-  nomeSocial: z.string().optional(),
-  telefone: z.string().min(1, 'Telefone é obrigatório'),
+  profileId: z.number().min(1, 'Perfil é obrigatório'),
+  name: z.string().min(1, 'Nome completo é obrigatório'),
+  phone: z.string().min(1, 'Telefone é obrigatório'),
   email: z.string().email('Email inválido'),
   cpf: z.string().min(11, 'CPF deve ter 11 dígitos'),
-  senha: z.string().optional().refine((val) => !val || val.length >= 6, {
+  password: z.string().optional().refine((val) => !val || val.length >= 6, {
     message: 'Senha deve ter pelo menos 6 caracteres'
   }),
-  confirmarSenha: z.string().optional(),
+  passwordConfirm: z.string().optional(),
   status: z.string().min(1, 'Status é obrigatório'),
-}).superRefine((data, ctx) => {
-  const senhaInformada = !!data.senha && data.senha.trim() !== '';
-  const confirmarInformado = !!data.confirmarSenha && data.confirmarSenha.trim() !== '';
-  if (senhaInformada || confirmarInformado) {
-    if (!senhaInformada || !confirmarInformado) {
+}).superRefine((data, ctx) => { // TODO CHECK for password validation on this.
+  const passwordInformed = !!data.password && data.password.trim() !== '';
+  const confirmPassword = !!data.passwordConfirm && data.passwordConfirm.trim() !== '';
+  if (passwordInformed || confirmPassword) {
+    if (!passwordInformed || !confirmPassword) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ['confirmarSenha'],
-        message: 'Preencha e confirme a nova senha',
+        path: ['passwordConfirm'],
+        message: 'Preencha e confirme a nova password',
       });
-    } else if (data.senha !== data.confirmarSenha) {
+    } else if (data.password !== data.passwordConfirm) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        path: ['confirmarSenha'],
-        message: 'As senhas não coincidem',
+        path: ['passwordConfirm'],
+        message: 'As passwords não coincidem',
       });
     }
   }
@@ -57,10 +54,10 @@ export default function UsuarioEdit() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
+  // const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [user, setUser] = useState<Usuario | null>(null);
   const { cpf, setCpf, handleCpfChange } = useCpfFormat();
   const { phone, setPhone, handlePhoneChange } = usePhoneFormat();
 
@@ -73,34 +70,28 @@ export default function UsuarioEdit() {
   } = useForm<UsuarioFormData>({
     resolver: zodResolver(usuarioSchema),
     defaultValues: {
-      idPerfil: 1,
-      temNomeSocial: 'N',
+      profileId: 1,
       status: 'ATIVO',
     },
     mode: 'onChange',
   });
 
-  const temNomeSocial = watch('temNomeSocial');
-
   useEffect(() => {
     if (location.state?.usuario) {
       const usuarioData = location.state.usuario as Usuario;
-      setUsuario(usuarioData);
+      setUser(usuarioData);
       
       // Preencher o formulário com os dados do usuário
-      setValue('idPerfil', usuarioData.idPerfil);
-      setValue('nomeCompleto', usuarioData.nomeCompleto);
-      setValue('apelido', usuarioData.apelido);
-      setValue('temNomeSocial', usuarioData.temNomeSocial);
-      setValue('nomeSocial', usuarioData.nomeSocial || '');
+      setValue('profileId', usuarioData.profileId);
+      setValue('name', usuarioData.name);
       setValue('email', usuarioData.email);
       setValue('status', usuarioData.status);
       
       // Formatar e definir CPF e telefone
       setCpf(usuarioData.cpf);
-      setPhone(usuarioData.telefone);
+      setPhone(usuarioData.phone);
       setValue('cpf', usuarioData.cpf);
-      setValue('telefone', usuarioData.telefone);
+      setValue('phone', usuarioData.phone);
     } else {
       // Se não há usuário no state, redirecionar para a lista
       navigate('/usuarios');
@@ -113,42 +104,28 @@ export default function UsuarioEdit() {
   };
 
   const onSubmit = async (data: UsuarioFormData) => {
-    if (!usuario) return;
+    if (!user) return;
     
     setIsLoading(true);
     setMessage(null);
     
     try {
-      // Mapear status e preparar payload exigido pelo backend
-      const mapStatus = (s: string) => {
-        switch (s) {
-          case 'ATIVO':
-            return 'A';
-          case 'INATIVO':
-            return 'I';
-          case 'BLOQUEADO':
-            return 'B';
-          default:
-            return s;
-        }
-      };
 
       const updateData: UpdateUsuarioData = {
         ...data,
-        idUsuario: usuario.idUsuario,
-        nomeSocial: data.temNomeSocial === 'S' ? data.nomeSocial || '' : '',
-        status: mapStatus(data.status),
+        id: user.id,
+        status: data.status,
       } as any;
 
-      // Só incluir senha/confirmarSenha se ambos foram informados
-      if (data.senha && data.senha.trim() !== '' && data.confirmarSenha && data.confirmarSenha.trim() !== '') {
-        updateData.senha = data.senha;
-        (updateData as any).confirmarSenha = data.confirmarSenha;
+      // Só incluir password/passwordConfirm se ambos foram informados
+      if (data.password && data.password.trim() !== '' && data.passwordConfirm && data.passwordConfirm.trim() !== '') {
+        updateData.password = data.password;
+        (updateData as any).passwordConfirm = data.passwordConfirm;
       }
       
-      const response = await usuarioService.atualizarUsuario(usuario.idUsuario, updateData);
+      const response = await usuarioService.atualizarUsuario(user.id, updateData);
       
-      if ((response as any).status === true) {
+      if ((response as any).status === 200) {
         navigate('/usuarios');
       } else {
         showMessage('error', response.message || 'Erro ao atualizar usuário');
@@ -178,10 +155,10 @@ export default function UsuarioEdit() {
   const handlePhoneInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     handlePhoneChange(value);
-    setValue('telefone', value.replace(/\D/g, ''));
+    setValue('phone', value.replace(/\D/g, ''));
   };
 
-  if (!usuario) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
@@ -249,15 +226,15 @@ export default function UsuarioEdit() {
                     Perfil <span className="text-red-500">*</span>
                   </label>
                   <select
-                    {...register('idPerfil', { valueAsNumber: true })}
+                    {...register('profileId', { valueAsNumber: true })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value={1}>Administrador</option>
                     <option value={2}>Usuário</option>
                     <option value={3}>Gerente</option>
                   </select>
-                  {errors.idPerfil && (
-                    <p className="mt-1 text-sm text-red-600">{errors.idPerfil.message}</p>
+                  {errors.profileId && (
+                    <p className="mt-1 text-sm text-red-600">{errors.profileId.message}</p>
                   )}
                 </div>
 
@@ -267,62 +244,15 @@ export default function UsuarioEdit() {
                     Nome Completo <span className="text-red-500">*</span>
                   </label>
                   <input
-                    {...register('nomeCompleto')}
+                    {...register('name')}
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Digite o nome completo"
                   />
-                  {errors.nomeCompleto && (
-                    <p className="mt-1 text-sm text-red-600">{errors.nomeCompleto.message}</p>
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
                   )}
                 </div>
-
-                {/* Apelido */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Apelido
-                  </label>
-                  <input
-                    {...register('apelido')}
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Digite o apelido"
-                  />
-                  {errors.apelido && (
-                    <p className="mt-1 text-sm text-red-600">{errors.apelido.message}</p>
-                  )}
-                </div>
-
-                {/* Tem Nome Social */}
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="temNomeSocial"
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    checked={temNomeSocial === 'S'}
-                    onChange={(e) => {
-                      setValue('temNomeSocial', e.target.checked ? 'S' : 'N');
-                    }}
-                  />
-                  <label htmlFor="temNomeSocial" className="text-sm font-medium text-gray-700">
-                    Possui Nome Social
-                  </label>
-                </div>
-
-                {/* Nome Social */}
-                {temNomeSocial === 'S' && (
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nome Social
-                    </label>
-                    <input
-                      {...register('nomeSocial')}
-                      type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Digite o nome social"
-                    />
-                  </div>
-                )}
 
                 {/* Telefone */}
                 <div>
@@ -336,8 +266,8 @@ export default function UsuarioEdit() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="(11) 99999-9999"
                   />
-                  {errors.telefone && (
-                    <p className="mt-1 text-sm text-red-600">{errors.telefone.message}</p>
+                  {errors.phone && (
+                    <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
                   )}
                 </div>
 
@@ -366,6 +296,7 @@ export default function UsuarioEdit() {
                     value={cpf}
                     onChange={handleCpfInputChange}
                     type="text"
+                    disabled
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="000.000.000-00"
                   />
@@ -373,58 +304,6 @@ export default function UsuarioEdit() {
                     <p className="mt-1 text-sm text-red-600">{errors.cpf.message}</p>
                   )}
                 </div>
-
-                {/* Senha */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Nova Senha
-                  </label>
-                  <div className="relative">
-                    <input
-                      {...register('senha')}
-                      type={showPassword ? 'text' : 'password'}
-                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Digite a nova senha"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {errors.senha && (
-                    <p className="mt-1 text-sm text-red-600">{errors.senha.message}</p>
-                  )}
-                </div>
-
-                {/* Confirmar Senha */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Confirmar Senha
-                  </label>
-                  <div className="relative">
-                    <input
-                      {...register('confirmarSenha')}
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Confirme a senha"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {errors.confirmarSenha && (
-                    <p className="mt-1 text-sm text-red-600">{errors.confirmarSenha.message}</p>
-                  )}
-                </div>
-
-
 
                 {/* Status */}
                 <div>

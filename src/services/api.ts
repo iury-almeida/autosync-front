@@ -4,13 +4,13 @@ import { useAuthStore } from '../stores/authStore';
 
 // Configuração base do axios
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5165',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
   timeout: 10000,
 });
 
 // Interceptor para adicionar token de autenticação
 api.interceptors.request.use(
-  (config) => {
+  (config) => { 
     const authStore = useAuthStore.getState();
     const { token, isTokenExpired } = authStore;
     

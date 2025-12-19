@@ -52,9 +52,8 @@ export const useAuthStore = create<AuthStore>()(
         try {
           // Converter para o formato esperado pela API
           const loginRequest: LoginRequest = {
-            CPFUsuario: credentials.cpf,
-            SenhaUsuario: credentials.password,
-            Tentativa: get().loginAttempts
+            cpf: credentials.cpf,
+            password: credentials.password
           };
 
           const response = await AuthService.login(loginRequest);

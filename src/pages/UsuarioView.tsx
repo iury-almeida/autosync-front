@@ -135,11 +135,7 @@ export default function UsuarioView() {
                 <User className="h-8 w-8 text-blue-600" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{usuario.nomeCompleto}</h2>
-                <p className="text-gray-600">{usuario.apelido}</p>
-                {usuario.temNomeSocial === 'S' && usuario.nomeSocial && (
-                  <p className="text-blue-600 text-sm">Nome Social: {usuario.nomeSocial}</p>
-                )}
+                <h2 className="text-2xl font-bold text-gray-900">{usuario.name}</h2>
               </div>
               <div className="ml-auto">
                 <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(usuario.status)}`}>
@@ -160,18 +156,8 @@ export default function UsuarioView() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-500">Nome Completo</label>
-                    <p className="text-sm text-gray-900">{usuario.nomeCompleto}</p>
+                    <p className="text-sm text-gray-900">{usuario.name}</p>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500">Apelido</label>
-                    <p className="text-sm text-gray-900">{usuario.apelido}</p>
-                  </div>
-                  {usuario.temNomeSocial === 'S' && usuario.nomeSocial && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-500">Nome Social</label>
-                      <p className="text-sm text-gray-900">{usuario.nomeSocial}</p>
-                    </div>
-                  )}
                   <div>
                     <label className="block text-sm font-medium text-gray-500">CPF</label>
                     <p className="text-sm text-gray-900">{formatCpf(usuario.cpf)}</p>
@@ -197,7 +183,7 @@ export default function UsuarioView() {
                     <label className="block text-sm font-medium text-gray-500">Telefone</label>
                     <p className="text-sm text-gray-900 flex items-center">
                       <Phone className="h-3 w-3 mr-1 text-gray-400" />
-                      {usuario.telefone}
+                      {usuario.phone}
                     </p>
                   </div>
                 </div>
@@ -214,7 +200,7 @@ export default function UsuarioView() {
                     <label className="block text-sm font-medium text-gray-500">Perfil</label>
                     <p className="text-sm text-gray-900 flex items-center">
                       <Shield className="h-3 w-3 mr-1 text-gray-400" />
-                      {getPerfilLabel(usuario.idPerfil)}
+                      {getPerfilLabel(usuario.profileId)}
                     </p>
                   </div>
                   <div>
@@ -238,34 +224,34 @@ export default function UsuarioView() {
                     <label className="block text-sm font-medium text-gray-500">Data de Cadastro</label>
                     <p className="text-sm text-gray-900 flex items-center">
                       <Calendar className="h-3 w-3 mr-1 text-gray-400" />
-                      {formatDate(usuario.dataCadastro)}
+                      {formatDate(usuario.createdAt)}
                     </p>
                   </div>
-                  <div>
+                  {/* <div>
                     <label className="block text-sm font-medium text-gray-500">Último Acesso</label>
                     <p className="text-sm text-gray-900 flex items-center">
                       <Clock className="h-3 w-3 mr-1 text-gray-400" />
                       {usuario.ultimoAcesso ? formatDate(usuario.ultimoAcesso) : 'Nunca acessou'}
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
 
             {/* Informações Adicionais */}
-            <div className="mt-8 pt-6 border-t border-gray-200">
+            {/* <div className="mt-8 pt-6 border-t border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Informações Adicionais</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-500">ID do Usuário</label>
-                  <p className="text-sm text-gray-900 font-mono">{usuario.idUsuario}</p>
+                  <p className="text-sm text-gray-900 font-mono">{usuario.id}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-500">ID do Perfil</label>
-                  <p className="text-sm text-gray-900 font-mono">{usuario.idPerfil}</p>
+                  <p className="text-sm text-gray-900 font-mono">{usuario.profileId}</p>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

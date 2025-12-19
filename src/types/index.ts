@@ -10,32 +10,27 @@ export interface User {
 
 // Tipos para Usuario baseados na estrutura do banco de dados
 export interface Usuario {
-  idUsuario: number;
-  idPerfil: number;
-  nomeCompleto: string;
-  apelido: string;
-  temNomeSocial: string; // Mudou para string ('S' ou 'N')
-  nomeSocial: string;
-  telefone: string;
+  id: number;
+  profileId: number;
+  name: string;
+  
+  phone: string;
   email: string;
   cpf: string;
-  senha: string;
-  dataCadastro: string;
-  ultimoAcesso: string;
+  password: string;
+  createdAt: string;
+  lastAccess: string;
   status: string;
 }
 
 export interface CreateUsuarioData {
-  idPerfil: number;
-  nomeCompleto: string;
-  apelido?: string; // Opcional
-  temNomeSocial: string; // 'S' ou 'N'
-  nomeSocial?: string; // Opcional
-  telefone: string;
-  email: string;
+  name: string;
   cpf: string;
-  senha: string; // Obrigatório no cadastro
-  confirmarSenha: string; // Obrigatório no cadastro
+  password: string; 
+  passwordConfirm: string; 
+  profileId: number;
+  phone: string;
+  email: string;
   status: string;
 }
 
@@ -164,14 +159,15 @@ export interface ApiResponse<T> {
 
 // Nova estrutura para resposta de listagem de usuários
 export interface ListaUsuariosResponse {
-  acesso: string;
-  listaUsuarios: {
-    paginaAtual: number;
-    tamanhoPagina: number;
-    dados: Usuario[];
-    totalPaginas: number;
-    totalRegistros: number;
-  };
+  data: Usuario[];
+  status: number;
+  message: string;
+  pagination: {
+    page: number
+    limit: number;
+    total: number;
+    totalPages: number;
+  }
 }
 
 export interface PaginatedResponse<T> {
@@ -180,4 +176,10 @@ export interface PaginatedResponse<T> {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+// Tipo para Perfil
+export interface Profile {
+  id: number;
+  name: string;
 } 

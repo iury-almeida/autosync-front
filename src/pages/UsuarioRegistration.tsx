@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,25 +11,22 @@ import {
   ArrowLeft,
   EyeOff
 } from 'lucide-react';
-import type { CreateUsuarioData } from '../types';
+import type { CreateUsuarioData, Profile } from '../types';
 import { usuarioService } from '../services/usuarioService';
 import { useCpfFormat } from '../hooks/useCpfFormat';
 import { usePhoneFormat } from '../hooks/usePhoneFormat';
 
 // Schema de validação para usuários
 const usuarioSchema = z.object({
-  idPerfil: z.number().min(1, 'Perfil é obrigatório'),
-  nomeCompleto: z.string().min(1, 'Nome completo é obrigatório'),
-  apelido: z.string().optional(), // Não é obrigatório no backend
-  temNomeSocial: z.string().refine(val => val === 'S' || val === 'N', 'Deve ser S ou N'),
-  nomeSocial: z.string().optional(),
-  telefone: z.string().min(1, 'Telefone é obrigatório'),
+  profileId: z.number().min(1, 'Perfil é obrigatório'),
+  name: z.string().min(1, 'Nome completo é obrigatório'),
+  phone: z.string().min(1, 'Telefone é obrigatório'),
   email: z.string().email('Email inválido'),
   cpf: z.string().min(11, 'CPF deve ter 11 dígitos'),
-  senha: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
-  confirmarSenha: z.string().min(1, 'Confirmação de senha é obrigatória'),
+  password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
+  passwordConfirm: z.string().min(1, 'Confirmação de senha é obrigatória'),
   status: z.string().min(1, 'Status é obrigatório'),
-}).refine((data) => data.senha === data.confirmarSenha, {
+}).refine((data) => data.password === data.passwordConfirm, {
   message: "As senhas não coincidem",
   path: ["confirmarSenha"],
 });
@@ -42,6 +39,8 @@ export default function UsuarioRegistration() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
   const { cpf, handleCpfChange } = useCpfFormat();
   const { phone, handlePhoneChange } = usePhoneFormat();
 
@@ -49,24 +48,43 @@ export default function UsuarioRegistration() {
     register,
     handleSubmit,
     formState: { errors, isValid },
-    watch,
+    // watch,
     setValue,
   } = useForm<UsuarioFormData>({
     resolver: zodResolver(usuarioSchema),
     defaultValues: {
-      idPerfil: 1,
-      temNomeSocial: 'N',
+    profileId: 1,
       status: 'ATIVO',
     },
     mode: 'onChange',
   });
 
-  const temNomeSocial = watch('temNomeSocial');
-
-  const showMessage = (type: 'success' | 'error', text: string) => {
+  const showMessage = useCallback((type: 'success' | 'error', text: string) => {
     setMessage({ type, text });
     setTimeout(() => setMessage(null), 5000);
-  };
+  }, []);
+
+  // Buscar perfis ao montar o componente
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      try {
+        setIsLoadingProfiles(true);
+        const perfis = await usuarioService.listarPerfis();
+        setProfiles(perfis);
+        // Se houver perfis, definir o primeiro como padrão
+        if (perfis.length > 0) {
+          setValue('profileId', perfis[0].id);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar perfis:', error);
+        showMessage('error', 'Erro ao carregar perfis');
+      } finally {
+        setIsLoadingProfiles(false);
+      }
+    };
+
+    fetchProfiles();
+  }, [setValue, showMessage]);
 
   const onSubmit = async (data: UsuarioFormData) => {
     console.log('onSubmit foi chamado!');
@@ -74,24 +92,22 @@ export default function UsuarioRegistration() {
     setMessage(null);
     
     // Preparar dados para enviar ao backend
-    const mapStatus = (s: string) => {
-      switch (s) {
-        case 'ATIVO':
-          return 'A';
-        case 'INATIVO':
-          return 'I';
-        case 'BLOQUEADO':
-          return 'B';
-        default:
-          return s;
-      }
-    };
+    // const mapStatus = (s: string) => {
+    //   switch (s) {
+    //     case 'ATIVO':
+    //       return 'A';
+    //     case 'INATIVO':
+    //       return 'I';
+    //     case 'BLOQUEADO':
+    //       return 'B';
+    //     default:
+    //       return s;
+    //   }
+    // };
 
     const dadosParaEnviar = {
       ...data,
-      nomeSocial: data.temNomeSocial === 'S' ? data.nomeSocial || '' : '',
-      confirmarSenha: data.confirmarSenha,
-      status: mapStatus(data.status),
+      // status: mapStatus(data.status),
     };
     
     console.log('Dados do formulário:', data);
@@ -130,7 +146,7 @@ export default function UsuarioRegistration() {
   const handlePhoneInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     handlePhoneChange(value);
-    setValue('telefone', value.replace(/\D/g, ''));
+    setValue('phone', value.replace(/\D/g, ''));
   };
 
   return (
@@ -191,15 +207,24 @@ export default function UsuarioRegistration() {
                     Perfil <span className="text-red-500">*</span>
                   </label>
                   <select
-                    {...register('idPerfil', { valueAsNumber: true })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    {...register('profileId', { valueAsNumber: true })}
+                    disabled={isLoadingProfiles}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   >
-                    <option value={1}>Administrador</option>
-                    <option value={2}>Usuário</option>
-                    <option value={3}>Gerente</option>
+                    {isLoadingProfiles ? (
+                      <option value="">Carregando perfis...</option>
+                    ) : profiles.length === 0 ? (
+                      <option value="">Nenhum perfil disponível</option>
+                    ) : (
+                      profiles.map((profile) => (
+                        <option key={profile.id} value={profile.id}>
+                          {profile.name}
+                        </option>
+                      ))
+                    )}
                   </select>
-                  {errors.idPerfil && (
-                    <p className="mt-1 text-sm text-red-600">{errors.idPerfil.message}</p>
+                  {errors.profileId && (
+                    <p className="mt-1 text-sm text-red-600">{errors.profileId.message}</p>
                   )}
                 </div>
 
@@ -209,62 +234,15 @@ export default function UsuarioRegistration() {
                     Nome Completo <span className="text-red-500">*</span>
                   </label>
                   <input
-                    {...register('nomeCompleto')}
+                    {...register('name')}
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Digite o nome completo"
                   />
-                  {errors.nomeCompleto && (
-                    <p className="mt-1 text-sm text-red-600">{errors.nomeCompleto.message}</p>
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
                   )}
                 </div>
-
-                {/* Apelido */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Apelido
-                  </label>
-                  <input
-                    {...register('apelido')}
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Digite o apelido"
-                  />
-                  {errors.apelido && (
-                    <p className="mt-1 text-sm text-red-600">{errors.apelido.message}</p>
-                  )}
-                </div>
-
-                {/* Tem Nome Social */}
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="temNomeSocial"
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    checked={temNomeSocial === 'S'}
-                    onChange={(e) => {
-                      setValue('temNomeSocial', e.target.checked ? 'S' : 'N');
-                    }}
-                  />
-                  <label htmlFor="temNomeSocial" className="text-sm font-medium text-gray-700">
-                    Possui Nome Social
-                  </label>
-                </div>
-
-                {/* Nome Social */}
-                {temNomeSocial === 'S' && (
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nome Social
-                    </label>
-                    <input
-                      {...register('nomeSocial')}
-                      type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Digite o nome social"
-                    />
-                  </div>
-                )}
 
                 {/* Telefone */}
                 <div>
@@ -278,8 +256,8 @@ export default function UsuarioRegistration() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="(11) 99999-9999"
                   />
-                  {errors.telefone && (
-                    <p className="mt-1 text-sm text-red-600">{errors.telefone.message}</p>
+                  {errors.phone && (
+                    <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
                   )}
                 </div>
 
@@ -323,7 +301,7 @@ export default function UsuarioRegistration() {
                    </label>
                    <div className="relative">
                      <input
-                       {...register('senha')}
+                       {...register('password')}
                        type={showPassword ? 'text' : 'password'}
                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                        placeholder="Digite a senha"
@@ -336,8 +314,8 @@ export default function UsuarioRegistration() {
                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                      </button>
                    </div>
-                   {errors.senha && (
-                     <p className="mt-1 text-sm text-red-600">{errors.senha.message}</p>
+                   {errors.password && (
+                     <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
                    )}
                  </div>
 
@@ -348,7 +326,7 @@ export default function UsuarioRegistration() {
                    </label>
                    <div className="relative">
                      <input
-                       {...register('confirmarSenha')}
+                       {...register('passwordConfirm')}
                        type={showConfirmPassword ? 'text' : 'password'}
                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                        placeholder="Confirme a senha"
@@ -361,8 +339,8 @@ export default function UsuarioRegistration() {
                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                      </button>
                    </div>
-                   {errors.confirmarSenha && (
-                     <p className="mt-1 text-sm text-red-600">{errors.confirmarSenha.message}</p>
+                   {errors.passwordConfirm && (
+                     <p className="mt-1 text-sm text-red-600">{errors.passwordConfirm.message}</p>
                    )}
                  </div>
 

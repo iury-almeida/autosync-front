@@ -1,9 +1,8 @@
 import api from './api';
 
 export interface LoginRequest {
-  CPFUsuario: string;
-  SenhaUsuario: string;
-  Tentativa: number;
+  cpf: string;
+  password: string;
 }
 
 export interface LoginResponse {
@@ -36,9 +35,9 @@ export interface NewPasswordResponse {
 }
 
 export class AuthService {
-  static async login(credentials: LoginRequest): Promise<LoginResponse> {
+  static async login(credentials: LoginRequest) {
     try {
-      const response = await api.post<LoginResponse>('/Login/autenticacao', null, {
+      const response = await api.post('/api/Login/autenticacao', null, {
         params: credentials
       });
       return response.data;
@@ -52,7 +51,7 @@ export class AuthService {
 
   static async resetPassword(email: string): Promise<ResetPasswordResponse> {
     try {
-      const response = await api.post<ResetPasswordResponse>('/Login/recuperarsenha', null, {
+      const response = await api.post<ResetPasswordResponse>('/api/Login/recuperarsenha', null, {
         params: { EmailUsuario: email }
       });
       return response.data;
@@ -66,7 +65,7 @@ export class AuthService {
 
   static async validateResetToken(token: string): Promise<{ status: boolean; idUsuario?: string; erro?: string }> {
     try {
-      const response = await api.get('/Login/novasenha', {
+      const response = await api.get('/api/Login/novasenha', {
         params: { Token: token }
       });
       return response.data;
@@ -80,7 +79,7 @@ export class AuthService {
 
   static async setNewPassword(data: NewPasswordRequest): Promise<NewPasswordResponse> {
     try {
-      const response = await api.post<NewPasswordResponse>('/Login/novasenha', null, {
+      const response = await api.post<NewPasswordResponse>('/api/Login/novasenha', null, {
         params: data
       });
       return response.data;

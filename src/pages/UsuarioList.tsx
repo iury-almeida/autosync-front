@@ -21,7 +21,7 @@ import { useCpfFormat } from '../hooks/useCpfFormat';
 
 export default function UsuarioList() {
   const navigate = useNavigate();
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [user, setUsers] = useState<Usuario[]>([]);
   const [filteredUsuarios, setFilteredUsuarios] = useState<Usuario[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,7 +45,7 @@ export default function UsuarioList() {
     try {
       const response = await usuarioService.listarUsuarios();
       if (response.status) {
-        setUsuarios(response.data);
+        setUsers(response.data);
         setFilteredUsuarios(response.data);
         
         // Atualizar informações de paginação se disponíveis
@@ -75,15 +75,14 @@ export default function UsuarioList() {
   }, []);
 
   useEffect(() => {
-    let filtered = usuarios;
+    let filtered = user;
 
     // Filtro por termo de busca
     if (searchTerm) {
-      filtered = filtered.filter(usuario =>
-        usuario.nomeCompleto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        usuario.apelido.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        usuario.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        usuario.cpf.includes(searchTerm)
+      filtered = filtered.filter(user =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.cpf.includes(searchTerm)
       );
     }
 
@@ -93,7 +92,7 @@ export default function UsuarioList() {
     }
 
     setFilteredUsuarios(filtered);
-  }, [usuarios, searchTerm, statusFilter]);
+  }, [user, searchTerm, statusFilter]);
 
   const handleDelete = async (idUsuario: number, nomeCompleto: string) => {
     if (confirm(`Tem certeza que deseja excluir o usuário "${nomeCompleto}"?`)) {
@@ -285,7 +284,7 @@ export default function UsuarioList() {
                     if (!usuario) return null;
                     
                     return (
-                      <tr key={usuario.idUsuario} className="hover:bg-gray-50">
+                      <tr key={usuario.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -293,16 +292,10 @@ export default function UsuarioList() {
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">
-                              {usuario.nomeCompleto || 'Nome não informado'}
+                              {usuario.name || 'Nome não informado'}
                             </div>
                                                          <div className="text-sm text-gray-500">
-                               {usuario.apelido || '-'}
                              </div>
-                             {usuario.temNomeSocial === 'S' && usuario.nomeSocial && (
-                               <div className="text-xs text-blue-600">
-                                 Nome Social: {usuario.nomeSocial}
-                               </div>
-                             )}
                           </div>
                         </div>
                       </td>
@@ -314,7 +307,7 @@ export default function UsuarioList() {
                           </div>
                           <div className="flex items-center mb-1">
                             <Phone className="h-3 w-3 text-gray-400 mr-1" />
-                            {usuario.telefone || 'Telefone não informado'}
+                            {usuario.phone || 'Telefone não informado'}
                           </div>
                           <div className="text-xs text-gray-500">
                             CPF: {usuario.cpf ? formatCpf(usuario.cpf) : '-'
@@ -326,7 +319,7 @@ export default function UsuarioList() {
                         <div className="flex items-center">
                           <Shield className="h-4 w-4 text-gray-400 mr-1" />
                           <span className="text-sm text-gray-900">
-                            {getPerfilLabel(usuario.idPerfil)}
+                            {getPerfilLabel(usuario.profileId)}
                           </span>
                         </div>
                       </td>
@@ -338,7 +331,7 @@ export default function UsuarioList() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center">
                           <Calendar className="h-3 w-3 text-gray-400 mr-1" />
-                          {formatDate(usuario.dataCadastro)}
+                          {formatDate(usuario.createdAt)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -358,7 +351,7 @@ export default function UsuarioList() {
                             <Edit className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => handleDelete(usuario.idUsuario, usuario.nomeCompleto)}
+                            onClick={() => handleDelete(usuario.id, usuario.name)}
                             className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
                             title="Excluir"
                           >
